@@ -3,6 +3,7 @@ package com.he_zhw.Aspect;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,13 +13,19 @@ import org.springframework.stereotype.Component;
 @Aspect
 public class MyAspectByAnnotation {
 
-    @Before("execution(* com.he_zhw.serviceImpl.*.*(..))")
+    /*公共切入点*/
+    @Pointcut("execution(* com.he_zhw.serviceImpl.*.*(..))")
+    public void  pointCut(){
+
+    }
+
+    @Before("pointCut()")
     public void Before(){
         System.out.println("666");
     }
 
-    @AfterReturning("execution(* com.he_zhw.serviceImpl.*.*(..))")
+    @AfterReturning("pointCut()")
     public  void After(){
-        System.out.println("7778");
+        System.out.println("7779");
     }
 }
