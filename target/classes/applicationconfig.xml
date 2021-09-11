@@ -5,7 +5,7 @@
 
     <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
         <property name="driverClass" value="com.mysql.jdbc.Driver"/>
-        <property name="jdbcUrl" value="jdbc:mysql://192.168.72.139:3306/bookstores"/>
+        <property name="jdbcUrl" value="jdbc:mysql://192.168.182.128:3306/bookstores"/>
         <property name="user" value="root"/>
         <property name="password" value="root"/>
     </bean>
