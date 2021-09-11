@@ -11,13 +11,13 @@ import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.util.List;
 
-@Repository
+
 public class StudentDaoImpl extends JdbcDaoSupport implements StudentDao {
 
-    @Autowired
+    /**//*@Autowired
     public void setDataSource1(DataSource dataSource){
         this.setDataSource(dataSource);
-    }
+    }*/
 
     @Override
     public Student getStudentById(int id) {
