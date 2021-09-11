@@ -5,9 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="da1a39dd-ac06-4ebf-bf4c-349d5f1d71ba" name="Changes" comment="Spring测试">
-      <change beforePath="$PROJECT_DIR$/.idea/SpringDemo.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SpringDemo.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/he_zhw/DaoImpl/StudentDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/he_zhw/DaoImpl/StudentDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/he_zhw/serviceImpl/StudentServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/he_zhw/serviceImpl/StudentServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/applicationconfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/applicationconfig.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/applicationconfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/applicationconfig.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,7 +76,8 @@
       <workItem from="1631327512768" duration="654000" />
       <workItem from="1631328208742" duration="1240000" />
       <workItem from="1631329493930" duration="552000" />
-      <workItem from="1631330070648" duration="322000" />
+      <workItem from="1631330070648" duration="850000" />
+      <workItem from="1631331010872" duration="2670000" />
     </task>
     <task id="LOCAL-00001" summary="Spring测试">
       <created>1631328942623</created>
@@ -83,7 +86,14 @@
       <option name="project" value="LOCAL" />
       <updated>1631328942623</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Spring测试">
+      <created>1631330579704</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1631330579704</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
