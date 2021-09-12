@@ -26,4 +26,178 @@
 </dependency>
 ```
 
-阿萨大大
+# Spring使用properties文件配置数据源
+
+- resources文件夹下创建并配置properties文件
+
+  ```properties
+  jdbc.driverClass=com.mysql.jdbc.Driver
+  jdbc.jdbcUrl=jdbc:mysql://192.168.72.139:3306/bookstores
+  jdbc.user=root
+  jdbc.password=root
+  ```
+
+- 配置spring文件
+
+  ```xml
+      <context:property-placeholder location="classpath:/jdbc.properties" />
+      <!--数据源配置-->
+      <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+          <property name="driverClass" value="${jdbc.driverClass}"/>
+          <property name="jdbcUrl" value="${jdbc.jdbcUrl}"/>
+          <property name="user" value="${jdbc.user}"/>
+          <property name="password" value="${jdbc.password}"/>
+      </bean>
+  ```
+
+  完整配置
+
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <beans xmlns="http://www.springframework.org/schema/beans"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:context="http://www.springframework.org/schema/context"
+         xmlns:aop="http://www.springframework.org/schema/aop"
+         xsi:schemaLocation="http://www.springframework.org/schema/beans
+                             http://www.springframework.org/schema/beans/spring-beans.xsd
+                             http://www.springframework.org/schema/context
+                             https://www.springframework.org/schema/context/spring-context.xsd
+                             http://www.springframework.org/schema/aop
+                             https://www.springframework.org/schema/aop/spring-aop.xsd">
+      <context:property-placeholder location="classpath:/jdbc.properties" />
+      <!--数据源配置-->
+      <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+          <property name="driverClass" value="${jdbc.driverClass}"/>
+          <property name="jdbcUrl" value="${jdbc.jdbcUrl}"/>
+          <property name="user" value="${jdbc.user}"/>
+          <property name="password" value="${jdbc.password}"/>
+      </bean>
+  
+      <context:component-scan base-package="com.he_zhw"/>
+      <aop:aspectj-autoproxy/>
+  </beans>
+  ```
+
+
+
+# Spring事务管理
+
+
+
+Maven引用spring-tx包
+
+```xml
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-tx</artifactId>
+    <version>5.3.9</version>
+</dependency>
+```
+
+配置头引入命名空间
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/tx
+                           http://www.springframework.org/schema/tx/spring-tx.xsd">
+```
+
+基于xml完整配置
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           https://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/aop
+                           https://www.springframework.org/schema/aop/spring-aop.xsd
+                           http://www.springframework.org/schema/tx
+                           http://www.springframework.org/schema/tx/spring-tx.xsd">
+    <context:property-placeholder location="classpath:/jdbc.properties"/>
+    <!--数据源配置-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${jdbc.driverClass}"/>
+        <property name="jdbcUrl" value="${jdbc.jdbcUrl}"/>
+        <property name="user" value="${jdbc.user}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+    <bean id="AccountDao" class="com.he_zhw.DaoImpl.AccountDaoImpl">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <bean id="AccountService" class="com.he_zhw.serviceImpl.AccountServiceImpl">
+        <property name="accountDao" ref="AccountDao"/>
+    </bean>
+
+    <!--事务管理器-->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+
+    <!--事务详情-->
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <tx:attributes>
+            <!--propagation-传播机制 isolation-隔离级别-->
+            <tx:method name="transfer" propagation="REQUIRED" isolation="DEFAULT" no-rollback-for="java.lang.RuntimeException"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!--AOP配置-->
+    <aop:config>
+        <aop:advisor advice-ref="txAdvice" pointcut="execution(* com.he_zhw.serviceImpl..*.*(..))"/>
+    </aop:config>
+<!--    <context:component-scan base-package="com.he_zhw"/>
+    <aop:aspectj-autoproxy/>-->
+
+</beans>
+```
+
+基于注解完整配置
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           https://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/aop
+                           https://www.springframework.org/schema/aop/spring-aop.xsd
+                           http://www.springframework.org/schema/tx
+                           http://www.springframework.org/schema/tx/spring-tx.xsd">
+    <context:property-placeholder location="classpath:/jdbc.properties"/>
+    <!--数据源配置-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${jdbc.driverClass}"/>
+        <property name="jdbcUrl" value="${jdbc.jdbcUrl}"/>
+        <property name="user" value="${jdbc.user}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+    <!--事务管理器-->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!--将事务管理器交于Spring-->
+    <tx:annotation-driven transaction-manager="txManager"/>
+
+    <!--扫描注解类-->
+    <context:component-scan base-package="com.he_zhw"/>
+
+    <!--使注解类生效-->
+    <aop:aspectj-autoproxy/>
+
+</beans>
+```
+
