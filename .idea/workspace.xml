@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da1a39dd-ac06-4ebf-bf4c-349d5f1d71ba" name="Changes" comment="Spring事务管理基于xml">
+    <list default="true" id="da1a39dd-ac06-4ebf-bf4c-349d5f1d71ba" name="Changes" comment="Spring事务管理基于注解">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/he_zhw/DaoImpl/AccountDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/he_zhw/DaoImpl/AccountDaoImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/he_zhw/serviceImpl/AccountServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/he_zhw/serviceImpl/AccountServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/applicationconfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/applicationconfig.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/applicationconfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/applicationconfig.xml" afterDir="false" />
@@ -181,7 +182,14 @@
       <option name="project" value="LOCAL" />
       <updated>1631455863188</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Spring事务管理基于注解">
+      <created>1631457186869</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1631457186869</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -206,6 +214,7 @@
     <MESSAGE value="SpringAOP基于注解" />
     <MESSAGE value="Spring使用properties配置数据源连接串" />
     <MESSAGE value="Spring事务管理基于xml" />
-    <option name="LAST_COMMIT_MESSAGE" value="Spring事务管理基于xml" />
+    <MESSAGE value="Spring事务管理基于注解" />
+    <option name="LAST_COMMIT_MESSAGE" value="Spring事务管理基于注解" />
   </component>
 </project>
