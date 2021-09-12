@@ -20,32 +20,18 @@
         <property name="user" value="${jdbc.user}"/>
         <property name="password" value="${jdbc.password}"/>
     </bean>
-    <bean id="AccountDao" class="com.he_zhw.DaoImpl.AccountDaoImpl">
-        <property name="dataSource" ref="dataSource"/>
-    </bean>
-    <bean id="AccountService" class="com.he_zhw.serviceImpl.AccountServiceImpl">
-        <property name="accountDao" ref="AccountDao"/>
-    </bean>
-
     <!--事务管理器-->
     <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
+    <!--将事务管理器交于Spring-->
+    <tx:annotation-driven transaction-manager="txManager"/>
 
-    <!--事务详情-->
-    <tx:advice id="txAdvice" transaction-manager="txManager">
-        <tx:attributes>
-            <!--propagation-传播机制 isolation-隔离级别-->
-            <tx:method name="transfer" propagation="REQUIRED" isolation="DEFAULT" no-rollback-for="java.lang.RuntimeException"/>
-        </tx:attributes>
-    </tx:advice>
+    <!--扫描注解类-->
+    <context:component-scan base-package="com.he_zhw"/>
 
-    <!--AOP配置-->
-    <aop:config>
-        <aop:advisor advice-ref="txAdvice" pointcut="execution(* com.he_zhw.serviceImpl..*.*(..))"/>
-    </aop:config>
-<!--    <context:component-scan base-package="com.he_zhw"/>
-    <aop:aspectj-autoproxy/>-->
+    <!--使注解类生效-->
+    <aop:aspectj-autoproxy/>
 
 </beans>

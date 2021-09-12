@@ -4,19 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da1a39dd-ac06-4ebf-bf4c-349d5f1d71ba" name="Changes" comment="Spring使用properties配置数据源连接串">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/he_zhw/Dao/AccountDao.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/he_zhw/DaoImpl/AccountDaoImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/he_zhw/domain/Account.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/he_zhw/service/AccountService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/he_zhw/serviceImpl/AccountServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+    <list default="true" id="da1a39dd-ac06-4ebf-bf4c-349d5f1d71ba" name="Changes" comment="Spring事务管理基于xml">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/he_zhw/serviceImpl/AccountServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/he_zhw/serviceImpl/AccountServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/applicationconfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/applicationconfig.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/he_zhw/serviceImpl/StudentServiceImplTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/he_zhw/serviceImpl/StudentServiceImplTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/applicationconfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/applicationconfig.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/com/he_zhw/serviceImpl/StudentServiceImplTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/he_zhw/serviceImpl/StudentServiceImplTest.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -182,7 +174,14 @@
       <option name="project" value="LOCAL" />
       <updated>1631447498095</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Spring事务管理基于xml">
+      <created>1631455863188</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1631455863188</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -206,6 +205,7 @@
     <MESSAGE value="SpringAOP基于xml" />
     <MESSAGE value="SpringAOP基于注解" />
     <MESSAGE value="Spring使用properties配置数据源连接串" />
-    <option name="LAST_COMMIT_MESSAGE" value="Spring使用properties配置数据源连接串" />
+    <MESSAGE value="Spring事务管理基于xml" />
+    <option name="LAST_COMMIT_MESSAGE" value="Spring事务管理基于xml" />
   </component>
 </project>
