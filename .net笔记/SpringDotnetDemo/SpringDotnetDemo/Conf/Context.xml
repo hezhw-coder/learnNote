@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--objects:配置容器里对象-->
+<objects xmlns="http://www.springframework.net" xmlns:aop="http://www.springframework.net/aop">
+  <!--<object type="SpringDotnetDemo.UserInfoDal, SpringDotnetDemo">
+  </object>
+  <object id="consoleLoggingAroundAdvice"  type="SpringDotnetDemo.AOPDemo.ConsoleLoggingAroundAdvice,SpringDotnetDemo"/>
+
+  <object id="aroundAdvice" type="SpringDotnetDemo.AOPDemo.AroundAdvice,SpringDotnetDemo"/>
+  
+  <object id="myServiceObject" type="Spring.Aop.Framework.ProxyFactoryObject,Spring.Aop">
+    <property name="Target">--><!--确定目标类--><!--
+      <object id="myServiceObjectTarget"  type="SpringDotnetDemo.AOPDemo.ServiceCommand,SpringDotnetDemo"/>
+    </property>
+    <property name="InterceptorNames">--><!--确定切面类--><!--
+      <list>
+        <value>consoleLoggingAroundAdvice</value>
+        <value>aroundAdvice</value>
+      </list>
+    </property>
+  </object>-->
+
+  <!--<object id="ProxyCreator" type="Spring.Aop.Framework.AutoProxy.ObjectNameAutoProxyCreator, Spring.Aop">
+    <property name="ObjectNames">
+      <list>
+        <value>English*</value>
+        <value>PortugeseSpeaker</value>
+      </list>
+    </property>
+    <property name="InterceptorNames">
+      <list>
+        <value>debugInterceptor</value>
+      </list>
+    </property>
+  </object>
+
+  <object id="debugInterceptor" type="SpringDotnetDemo.AOPDemo.DebugInterceptor, SpringDotnetDemo"/>
+
+  <object id="EnglishSpeakerOne" type="SpringDotnetDemo.AOPDemo.HelloWorldSpeaker, SpringDotnetDemo">
+    <property name="Language" value="English"/>
+  </object>
+
+  <object id="EnglishSpeakerTwo" type="SpringDotnetDemo.AOPDemo.HelloWorldSpeaker, SpringDotnetDemo">
+    <property name="Language" value="English"/>
+  </object>
+
+  <object id="PortugeseSpeaker" type="SpringDotnetDemo.AOPDemo.HelloWorldSpeaker, SpringDotnetDemo">
+    <property name="Language" value="Portuguese"/>
+  </object>
+
+  <object id="ItalianSpeakerOne" type="SpringDotnetDemo.AOPDemo.HelloWorldSpeaker, SpringDotnetDemo">
+    <property name="Language" value="Italian"/>
+  </object>-->
+  <!--<object id="ProxyCreator" type="Spring.Aop.Framework.AutoProxy.DefaultAdvisorAutoProxyCreator, Spring.Aop"/>
+  <object id="debugInterceptor" type="SpringDotnetDemo.AOPDemo.DebugInterceptor, SpringDotnetDemo"/>
+  <object id="EnglishSpeakerTwo" type="SpringDotnetDemo.AOPDemo.HelloWorldSpeaker, SpringDotnetDemo">
+    <property name="Language" value="English"/>
+  </object>
+  <object id="SpeachAdvisor" type="Spring.Aop.Support.RegularExpressionMethodPointcutAdvisor, Spring.Aop">
+    <property name="advice" ref="debugInterceptor"/>
+    <property name="patterns">
+      <list>
+        <value>.*Say.*</value>
+      </list>
+    </property>
+  </object>-->
+  <object id="advisor" type="Spring.Aop.Support.SdkRegularExpressionMethodPointcut, Spring.Aop">
+    <property name="patterns">
+      <list>
+        <value>SpringDotnetDemo.*.Say#</value>
+        <value>SpringDotnetDemo.*.Say</value>
+      </list>
+    </property>
+  </object>
+  <aop:config>
+    <aop:advisor pointcut-ref="advisor" advice-ref="debugInterceptor"/>
+  </aop:config>
+
+  <object id="debugInterceptor" type="SpringDotnetDemo.AOPDemo.DebugInterceptor, SpringDotnetDemo"/>
+
+  <object id="EnglishSpeakerTwo" type="SpringDotnetDemo.AOPDemo.HelloWorldSpeaker, SpringDotnetDemo">
+    <property name="Language" value="English"/>
+  </object>
+</objects>
