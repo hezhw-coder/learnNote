@@ -1,6 +1,32 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <objects xmlns='http://www.springframework.net'
-         xmlns:db="http://www.springframework.net/database">
+         xmlns:db="http://www.springframework.net/database"
+         xmlns:tx="http://www.springframework.net/tx"
+         xmlns:aop="http://www.springframework.net/aop">
 
+  <!--配置数据库驱动及连接串-->
   <db:provider id="DbProvider" provider="OracleClient-2.0" connectionString="Data Source=YITIHUATEST;User Id=hit_app;Password=hit;Pooling=True"/>
+
+  <!--配置事务管理器-->
+  <object id="transactionManager" type="Spring.Data.Core.AdoPlatformTransactionManager, Spring.Data">
+    <property name="DbProvider" ref="DbProvider"/>
+  </object>
+
+  <!--配置事务详情-->
+  <tx:advice id="txAdvice" transaction-manager="transactionManager">
+    <tx:attributes>
+      <!--name方法名*表示任意方法 isolation事务隔离级别 propagation事务传播机制-->
+      <tx:method name="*" isolation="ReadCommitted" propagation="Required"/>
+    </tx:attributes>
+  </tx:advice>
+
+  <!--配置切入点-->
+  <object id="serviceOperation" type="Spring.Aop.Support.SdkRegularExpressionMethodPointcut, Spring.Aop">
+    <property name="pattern" value="SpringDotnetDemo.Ado.net.Service.*"/>
+  </object>
+  
+  <!--配置AOP-->
+  <aop:config>
+    <aop:advisor pointcut-ref="serviceOperation" advice-ref="txAdvice"/>
+  </aop:config>
 </objects>

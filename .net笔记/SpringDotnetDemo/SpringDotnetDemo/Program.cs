@@ -2,6 +2,7 @@
 using Spring.Context;
 using Spring.Context.Support;
 using SpringDotnetDemo.Ado.net.Dao;
+using SpringDotnetDemo.Ado.net.Service;
 using SpringDotnetDemo.AOPDemo;
 using System;
 using System.Collections;
@@ -33,9 +34,20 @@ namespace SpringDotnetDemo
             //}
             //IHelloWorldSpeaker helloWorldSpeaker = (IHelloWorldSpeaker)ctx.GetObject("EnglishSpeakerTwo");
             //helloWorldSpeaker.SayHello();
-            IEmployeeInfoDao employeeInfoDao = (IEmployeeInfoDao)ctx.GetObject("EmployeeInfoDao");
-            object v = employeeInfoDao.ExecuteScalar(@"select *from fin_opr_register t where t.clinic_code='523318'");
-            Console.WriteLine(v);
+            //IEmployeeInfoDao employeeInfoDao = (IEmployeeInfoDao)ctx.GetObject("EmployeeInfoDao");
+            //object v = employeeInfoDao.ExecuteScalar(@"select *from fin_opr_register t where t.clinic_code='523318'");
+            IEmployeeInfoService employeeInfoService = (IEmployeeInfoService)ctx.GetObject("EmployeeInfoService");
+            try
+            {
+                employeeInfoService.updateEmployeeInfo("009999");
+
+            }
+            catch (Exception e)
+            {
+
+                Console.WriteLine(e.Message);
+            }            
+            //Console.WriteLine(v);
             Console.ReadKey();
         }
     }
