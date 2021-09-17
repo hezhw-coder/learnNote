@@ -19,7 +19,7 @@
     </property>
   </object>-->
 
-  <object id="ProxyCreator" type="Spring.Aop.Framework.AutoProxy.ObjectNameAutoProxyCreator, Spring.Aop">
+  <!--<object id="ProxyCreator" type="Spring.Aop.Framework.AutoProxy.ObjectNameAutoProxyCreator, Spring.Aop">
     <property name="ObjectNames">
       <list>
         <value>English*</value>
@@ -49,7 +49,7 @@
 
   <object id="ItalianSpeakerOne" type="SpringDotnetDemo.AOPDemo.HelloWorldSpeaker, SpringDotnetDemo">
     <property name="Language" value="Italian"/>
-  </object>
+  </object>-->
   <!--<object id="ProxyCreator" type="Spring.Aop.Framework.AutoProxy.DefaultAdvisorAutoProxyCreator, Spring.Aop"/>
   <object id="debugInterceptor" type="SpringDotnetDemo.AOPDemo.DebugInterceptor, SpringDotnetDemo"/>
   <object id="EnglishSpeakerTwo" type="SpringDotnetDemo.AOPDemo.HelloWorldSpeaker, SpringDotnetDemo">
@@ -59,11 +59,11 @@
     <property name="advice" ref="debugInterceptor"/>
     <property name="patterns">
       <list>
-        <value>SpringDotnetDemo.AOPDemo.HelloWorldSpeaker.Say</value>
+        <value>.*Say.*</value>
       </list>
     </property>
   </object>-->
-  <!--<object id="advisor" type="Spring.Aop.Support.SdkRegularExpressionMethodPointcut, Spring.Aop">
+  <object id="advisor" type="Spring.Aop.Support.SdkRegularExpressionMethodPointcut, Spring.Aop">
     <property name="patterns">
       <list>
         <value>SpringDotnetDemo.*.Say#</value>
@@ -79,5 +79,5 @@
 
   <object id="EnglishSpeakerTwo" type="SpringDotnetDemo.AOPDemo.HelloWorldSpeaker, SpringDotnetDemo">
     <property name="Language" value="English"/>
-  </object>-->
+  </object>
 </objects>

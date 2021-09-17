@@ -44,6 +44,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\Spring.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Spring.Data">
+      <HintPath>..\..\..\..\..\学习资料\.net相关\SpringDotnetDemo\lib\Spring.Data.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -52,8 +55,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Ado.net\Dao\EmployeeInfoDao.cs" />
+    <Compile Include="Ado.net\Dao\IEmployeeInfoDao.cs" />
     <Compile Include="AOPDemo\AroundAdvice.cs" />
-    <Compile Include="AOPDemo\Class1.cs" />
     <Compile Include="AOPDemo\ConsoleLoggingAroundAdvice .cs" />
     <Compile Include="AOPDemo\HelloWorldSpeaker .cs" />
     <Compile Include="AOPDemo\ICommand.cs" />
@@ -70,6 +74,12 @@
   <ItemGroup />
   <ItemGroup>
     <Content Include="Conf\Context.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Conf\Dao.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Conf\DbProvider.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
