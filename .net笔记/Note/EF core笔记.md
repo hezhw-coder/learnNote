@@ -1,3 +1,11 @@
+安装工具包后才能使用迁移命令
+
+```powershell
+Install-Package Microsoft.EntityFrameworkCore.Tools
+```
+
+**数据使用特性会替代约定，但会被 Fluent API 配置替代**
+
 # EF core连接SQLserver
 
 NuGet安装驱动包
@@ -6,9 +14,35 @@ NuGet安装驱动包
 Install-Package Microsoft.EntityFrameworkCore.SqlServer
 ```
 
+安装工具包后才能使用迁移命令
+
 ```powershell
 Install-Package Microsoft.EntityFrameworkCore.Tools
 ```
+
+# EF core连接Oracle
+
+```powershell
+Install-Package Oracle.EntityFrameworkCore
+```
+
+### **<u>特别注意:由于EF Core生成的创表脚本带引号,导致表名和字段名区分大小写,在pl/sql查询不方便</u>**
+
+现有以下方案:
+
+1. 使用DBFirst(反向工程),详情请见[反向工程 - EF Core | Microsoft Docs](https://docs.microsoft.com/zh-cn/ef/core/managing-schemas/scaffolding?tabs=vs)
+
+   ```powershell
+   Scaffold-DbContext 'Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Chinook' Oracle.EntityFrameworkCore
+   ```
+
+   
+
+2. 第二种方案是在表名指定大写并且属性上标记大写的字段名
+
+   ![image-20211026225544084](D:\SourceRepository\学习笔记\.net笔记\Note\images\image-20211026225544084.png)
+
+   ![image-20211026225258249](D:\SourceRepository\学习笔记\.net笔记\Note\images\image-20211026225258249.png)
 
 创建表结构对应的实体类Books
 
