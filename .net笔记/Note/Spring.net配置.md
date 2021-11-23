@@ -546,7 +546,7 @@ namespace SpringDotnetDemo.Ado.net.Dao
 
 **新增的xml要设置成始终复制否则调试会报错**
 
-![image-20210917155949785](\Images\image-20210917155949785.png)
+![image-20210917155949785](Images\image-20210917155949785.png)
 
 测试示例
 

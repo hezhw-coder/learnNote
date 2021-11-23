@@ -40,9 +40,9 @@ Install-Package Oracle.EntityFrameworkCore
 
 2. 第二种方案是在表名指定大写并且属性上标记大写的字段名
 
-   ![image-20211026225544084](D:\SourceRepository\学习笔记\.net笔记\Note\images\image-20211026225544084.png)
+   ![image-20211026225544084](images\image-20211026225544084.png)
 
-   ![image-20211026225258249](D:\SourceRepository\学习笔记\.net笔记\Note\images\image-20211026225258249.png)
+   ![image-20211026225258249](images\image-20211026225258249.png)
 
 创建表结构对应的实体类Books
 
@@ -318,11 +318,11 @@ using (DemoDbContext demoDbContext = new DemoDbContext())
 
 ```
 
-![image-20211025225855359](D:\SourceRepository\学习笔记\.net笔记\Note\images\image-20211025225855359.png)
+![image-20211025225855359](images\image-20211025225855359.png)
 
 ## 使用DebugView.LongView查看实体的具体状态和变化
 
-![image-20211025230255089](D:\SourceRepository\学习笔记\.net笔记\Note\images\image-20211025230255089.png)
+![image-20211025230255089](images\image-20211025230255089.png)
 
 ## 使用`AsNoTracking()`方法让DbContext不跟踪查出来的实体
 
@@ -341,7 +341,7 @@ using (DemoDbContext demoDbContext = new DemoDbContext())
 }
 ```
 
-![image-20211025230723401](D:\SourceRepository\学习笔记\.net笔记\Note\images\image-20211025230723401.png)
+![image-20211025230723401](images\image-20211025230723401.png)
 
 # 全局查询筛选器
 
@@ -431,7 +431,7 @@ foreach (Article article in demoDbContext.Set<Article>())
     }
 ```
 
-![image-20211024132540313](D:\SourceRepository\学习笔记\.net笔记\Note\images\image-20211024132540313.png)
+![image-20211024132540313](images\image-20211024132540313.png)
 
 - 如果DbContext被释放了，遍历IQueryable会报错
 
@@ -451,7 +451,7 @@ static IQueryable<T> Test<T>() where T : class
 }
 ```
 
-![image-20211024142037590](D:\SourceRepository\学习笔记\.net笔记\Note\images\image-20211024142037590.png)
+![image-20211024142037590](images\image-20211024142037590.png)
 
 - SaveChanges方法里会包含事务，如果再自己操作事务报错
 
@@ -481,5 +481,5 @@ using (DemoDbContext demoDbContext = new DemoDbContext())
 }
 ```
 
-![image-20211024222848927](D:\SourceRepository\学习笔记\.net笔记\Note\images\image-20211024222848927.png)
+![image-20211024222848927](images\image-20211024222848927.png)
 
