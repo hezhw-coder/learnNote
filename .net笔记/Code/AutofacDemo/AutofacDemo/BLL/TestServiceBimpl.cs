@@ -16,11 +16,20 @@ namespace AutofacDemo.BLL
         //    this.testServiceA1 = testServiceA1;
         //}
         public ITestServiceA TestServiceA1 { get; set; }
+
+        private ITestServiceA TestServiceA2;
+
         public void Hello(string str)
         {
             //testServiceA1.Hello($"Call by ITestServiceA:{str}");
-            TestServiceA1.Hello($"Call by ITestServiceA:{str}");
+            //TestServiceA1.Hello($"Call by ITestServiceA:{str}");
+            TestServiceA2.Hello($"Call by {TestServiceA2.GetType()}:{str}");
             Console.WriteLine($"Call by ITestServiceB:{str}");
+        }
+
+        public void SetService(ITestServiceA TestServiceA)
+        {
+            this.TestServiceA2 = TestServiceA;
         }
     }
 }

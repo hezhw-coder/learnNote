@@ -77,3 +77,12 @@ testServiceB.Hello("Hello, World!");
 
 ![image-20211124153330051](images\image-20211124153330051.png)
 
+## 方法注入
+
+`TestServiceBimpl`类自定义一个方法，参数类别是`ITestServiceA`
+
+![image-20211125003052193](images\image-20211125003052193.png)
+
+注册服务使用方法注入
+
+![image-20211125003322514](images\image-20211125003322514.png)
