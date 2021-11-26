@@ -22,8 +22,8 @@ namespace AutofacDemo.BLL
         public void Hello(string str)
         {
             //testServiceA1.Hello($"Call by ITestServiceA:{str}");
-            //TestServiceA1.Hello($"Call by ITestServiceA:{str}");
-            TestServiceA2.Hello($"Call by {TestServiceA2.GetType()}:{str}");
+            TestServiceA1.Hello($"Call by ITestServiceA:{str}");
+            //TestServiceA2.Hello($"Call by {TestServiceA2.GetType()}:{str}");
             Console.WriteLine($"Call by ITestServiceB:{str}");
         }
 

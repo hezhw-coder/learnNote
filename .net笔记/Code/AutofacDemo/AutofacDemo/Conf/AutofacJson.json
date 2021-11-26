@@ -1,0 +1,25 @@
+{
+  "components": [
+    {
+      "type": "AutofacDemo.BLL.TestServiceAimpl, AutofacDemo",
+      "services": [
+        {
+          "type": "AutofacDemo.IBLL.ITestServiceA,AutofacDemo"
+        }
+      ],
+      "instanceScope": "Per-Lifetime-Scope"//生命周期
+
+
+
+    },
+    {
+      "type": "AutofacDemo.BLL.TestServiceBimpl, AutofacDemo", //服务对应实现类配置
+      "services": [
+        {
+          "type": "AutofacDemo.IBLL.ITestServiceB,AutofacDemo" //服务对应接口配置
+        }
+      ],
+      "injectProperties": true //TestServiceBimpl类中使用的是属性注入
+    }
+  ]
+}

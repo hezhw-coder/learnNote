@@ -192,4 +192,76 @@ Console.WriteLine(Object.ReferenceEquals(testServiceB1, testServiceB3));//打印
 
 ### InstancePerOwned
 
-**这个由使用者自己控制**
+这个由使用者自己控制
+
+## 配置文件配置实例
+
+nuget安装Autofac.Configuration配置扩展包(例子使用6.0.0版本)
+
+```powershell
+Install-Package Autofac.Configuration -Version 6.0.0
+```
+
+### 使用`json`文件配置
+
+nuget安装json文件配置扩展包(例子使用6.0.0版本)
+
+```powershell
+Install-Package Microsoft.Extensions.Configuration.Json -Version 6.0.0
+```
+
+创建配置文件`Conf\AutofacJson.json`
+
+```json
+{
+  "components": [
+    {
+      "type": "AutofacDemo.BLL.TestServiceAimpl, AutofacDemo",
+      "services": [
+        {
+          "type": "AutofacDemo.IBLL.ITestServiceA,AutofacDemo"
+        }
+      ],
+      "instanceScope": "Per-Lifetime-Scope"//生命周期
+    },
+    {
+      "type": "AutofacDemo.BLL.TestServiceBimpl, AutofacDemo", //服务对应实现类配置
+      "services": [
+        {
+          "type": "AutofacDemo.IBLL.ITestServiceB,AutofacDemo" //服务对应接口配置
+        }
+      ],
+      "injectProperties": true //TestServiceBimpl类中使用的是属性注入
+    }
+  ]
+}
+```
+
+![image-20211127001106543](images\image-20211127001106543.png)
+
+Json配置文件中生命周期instanceScope值的写法
+
+- single-instance(单例)
+- per-dependency(瞬时)
+- per-lifetime-scope((每个生命周期范围的实例)
+- per-request(每个请求一个实例)
+
+
+
+示例代码
+
+```C#
+// 实例化ConfigurationBuilder.
+var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder();
+//使用Microsoft.Extensions.Configuration.Json读取json配置文件
+config.AddJsonFile("Conf/AutofacJson.json");
+
+// Register the ConfigurationModule with Autofac.
+var module = new Autofac.Configuration.ConfigurationModule(config.Build());//将配置文件加载至module
+var builder = new ContainerBuilder();//创建ContainerBuilder
+builder.RegisterModule(module);//注册服务
+IContainer container = builder.Build();//创建容器
+ITestServiceB testServiceB = container.Resolve<ITestServiceB>();//获取实例
+testServiceB.Hello("Hello, World!");
+```
+
