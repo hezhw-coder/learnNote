@@ -1,0 +1,13 @@
+{
+  "components": [
+    {
+      "type": "WebApi4Autofac.BLL.TestServiceAimpl, WebApi4Autofac",
+      "services": [
+        {
+          "type": "WebApi4Autofac.IBLL.ITestServiceA,WebApi4Autofac"
+        }
+      ],
+      "instanceScope": "Per-Lifetime-Scope" //ÉúÃüÖÜÆÚ
+    }
+  ]
+}
