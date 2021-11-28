@@ -106,10 +106,51 @@ using Microsoft.Extensions.Configuration;
 //testServiceB.Hello("Hello, World!");
 
 #region 使用配置文件配置服务
+//// 实例化ConfigurationBuilder.
+//var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder();
+////使用Microsoft.Extensions.Configuration.Json读取json配置文件
+//config.AddJsonFile("Conf/AutofacJson.json");
+
+//// Register the ConfigurationModule with Autofac.
+//var module = new Autofac.Configuration.ConfigurationModule(config.Build());//将配置文件加载至module
+//var builder = new ContainerBuilder();//创建ContainerBuilder
+//builder.RegisterModule(module);//注册服务
+//IContainer container = builder.Build();//创建容器
+//ITestServiceB testServiceB = container.Resolve<ITestServiceB>();//获取实例
+//testServiceB.Hello("Hello, World!");
+#endregion
+
+#region 使用模块(Module)
+//// Register the ConfigurationModule with Autofac.
+//var module = new AutofacDemo.MyConfigurationModule();//实例化自定义的module实例
+//var builder = new ContainerBuilder();//创建容器ContainerBuilder
+//builder.RegisterModule(module);//注册module
+//IContainer container = builder.Build();//创建容器
+//ITestServiceB testServiceB = container.Resolve<ITestServiceB>();//获取实例
+//testServiceB.Hello("Hello, World!");
+#endregion
+
+
+#region 使用配置文件配置module
+//// 实例化ConfigurationBuilder.
+//var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder();
+////使用Microsoft.Extensions.Configuration.Json读取json配置文件
+//config.AddJsonFile("Conf/moduleConfig.json");
+
+//// Register the ConfigurationModule with Autofac.
+//var module = new Autofac.Configuration.ConfigurationModule(config.Build());//将配置文件加载至module
+//var builder = new ContainerBuilder();//创建ContainerBuilder
+//builder.RegisterModule(module);//注册服务
+//IContainer container = builder.Build();//创建容器
+//ITestServiceB testServiceB = container.Resolve<ITestServiceB>();//获取实例
+//testServiceB.Hello("Hello, World!");
+#endregion
+
+#region 使用Xml配置
 // 实例化ConfigurationBuilder.
 var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder();
-//使用Microsoft.Extensions.Configuration.Json读取json配置文件
-config.AddJsonFile("Conf/AutofacJson.json");
+//使用Microsoft.Extensions.Configuration.Xml读取xml配置文件
+config.AddXmlFile("Conf/AutofacXml.xml");
 
 // Register the ConfigurationModule with Autofac.
 var module = new Autofac.Configuration.ConfigurationModule(config.Build());//将配置文件加载至module

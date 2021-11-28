@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<autofac>
+	<components name="0">
+		<type>AutofacDemo.BLL.TestServiceAimpl, AutofacDemo</type>
+		<services name="0" type="AutofacDemo.IBLL.ITestServiceA,AutofacDemo" />
+	</components>
+	<components name="1">
+		<type>AutofacDemo.BLL.TestServiceBimpl, AutofacDemo</type>
+		<services name="0" type="AutofacDemo.IBLL.ITestServiceB,AutofacDemo" />
+		<injectProperties>true</injectProperties><!--支持属性注入-->
+	</components>
+</autofac>

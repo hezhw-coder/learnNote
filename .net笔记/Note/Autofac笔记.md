@@ -265,3 +265,102 @@ ITestServiceB testServiceB = container.Resolve<ITestServiceB>();//获取实例
 testServiceB.Hello("Hello, World!");
 ```
 
+其他常用属性配置
+
+![image-20211128105041985](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20211128105041985.png)
+
+### Module的使用
+
+自定义MyConfigurationModule继承抽象类Autofac.Module
+
+![image-20211128121304769](images\image-20211128121304769.png)
+
+**Module基本使用**
+
+```C#
+// Register the ConfigurationModule with Autofac.
+var module = new AutofacDemo.MyConfigurationModule();//实例化自定义的module实例
+var builder = new ContainerBuilder();//创建容器ContainerBuilder
+builder.RegisterModule(module);//注册module
+IContainer container = builder.Build();//创建容器
+ITestServiceB testServiceB = container.Resolve<ITestServiceB>();//获取实例
+testServiceB.Hello("Hello, World!");
+```
+
+原理:ContainerBuilder调用Build()方法时,会调用到基类Autofac.Module的Configure方法，该方法会依次调用自定义类MyConfigurationModule中的以下方法
+
+- void Load(ContainerBuilder builder)
+- void AttachToComponentRegistration(IComponentRegistryBuilder componentRegistry, IComponentRegistration registration)
+- AttachToRegistrationSource(IComponentRegistryBuilder componentRegistry, IRegistrationSource registrationSource)
+
+![image-20211128122155581](images\image-20211128122155581.png)
+
+### 使用配置文件配置module
+
+Conf文件夹下新建moduleConfig.json文件
+
+![image-20211128125201220](images\image-20211128125201220.png)
+
+使用示例
+
+```C#
+// 实例化ConfigurationBuilder.
+var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder();
+//使用Microsoft.Extensions.Configuration.Json读取json配置文件
+config.AddJsonFile("Conf/moduleConfig.json");
+
+// Register the ConfigurationModule with Autofac.
+var module = new Autofac.Configuration.ConfigurationModule(config.Build());//将配置文件加载至module
+var builder = new ContainerBuilder();//创建ContainerBuilder
+builder.RegisterModule(module);//注册服务
+IContainer container = builder.Build();//创建容器
+ITestServiceB testServiceB = container.Resolve<ITestServiceB>();//获取实例
+testServiceB.Hello("Hello, World!");
+```
+
+### 使用`xml`文件配置
+
+nuget安装xml文件配置扩展包(例子使用6.0.0版本)
+
+```powershell
+Install-Package Microsoft.Extensions.Configuration.Xml -Version 6.0.0
+```
+
+创建配置文件`Conf\AutofacXml.xml`
+
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<autofac>
+	<components name="0">
+		<type>AutofacDemo.BLL.TestServiceAimpl, AutofacDemo</type>
+		<services name="0" type="AutofacDemo.IBLL.ITestServiceA,AutofacDemo" />
+	</components>
+	<components name="1">
+		<type>AutofacDemo.BLL.TestServiceBimpl, AutofacDemo</type>
+		<services name="0" type="AutofacDemo.IBLL.ITestServiceB,AutofacDemo" />
+		<injectProperties>true</injectProperties><!--支持属性注入-->
+	</components>
+</autofac>
+```
+
+![image-20211128132049673](images\image-20211128132049673.png)
+
+***请注意 XML 中components和services的序号"命名" - 这是由于 Microsoft.Extensions.Configuration 处理序号集合（数组）的方式***
+
+使用示例
+
+```C#
+// 实例化ConfigurationBuilder.
+var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder();
+//使用Microsoft.Extensions.Configuration.Xml读取xml配置文件
+config.AddXmlFile("Conf/AutofacXml.xml");
+
+// Register the ConfigurationModule with Autofac.
+var module = new Autofac.Configuration.ConfigurationModule(config.Build());//将配置文件加载至module
+var builder = new ContainerBuilder();//创建ContainerBuilder
+builder.RegisterModule(module);//注册服务
+IContainer container = builder.Build();//创建容器
+ITestServiceB testServiceB = container.Resolve<ITestServiceB>();//获取实例
+testServiceB.Hello("Hello, World!");
+```
+
