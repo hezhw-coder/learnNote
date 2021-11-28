@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Autofac;
+using Autofac.Extras.DynamicProxy;
 using AutofacDemo.BLL;
 using AutofacDemo.IBLL;
 using Microsoft.Extensions.Configuration;
@@ -147,16 +148,40 @@ using Microsoft.Extensions.Configuration;
 #endregion
 
 #region 使用Xml配置
-// 实例化ConfigurationBuilder.
-var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder();
-//使用Microsoft.Extensions.Configuration.Xml读取xml配置文件
-config.AddXmlFile("Conf/AutofacXml.xml");
+//// 实例化ConfigurationBuilder.
+//var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder();
+////使用Microsoft.Extensions.Configuration.Xml读取xml配置文件
+//config.AddXmlFile("Conf/AutofacXml.xml");
 
-// Register the ConfigurationModule with Autofac.
-var module = new Autofac.Configuration.ConfigurationModule(config.Build());//将配置文件加载至module
-var builder = new ContainerBuilder();//创建ContainerBuilder
-builder.RegisterModule(module);//注册服务
-IContainer container = builder.Build();//创建容器
-ITestServiceB testServiceB = container.Resolve<ITestServiceB>();//获取实例
-testServiceB.Hello("Hello, World!");
+//// Register the ConfigurationModule with Autofac.
+//var module = new Autofac.Configuration.ConfigurationModule(config.Build());//将配置文件加载至module
+//var builder = new ContainerBuilder();//创建ContainerBuilder
+//builder.RegisterModule(module);//注册服务
+//IContainer container = builder.Build();//创建容器
+//ITestServiceB testServiceB = container.Resolve<ITestServiceB>();//获取实例
+//testServiceB.Hello("Hello, World!");
+#endregion
+
+#region 接口上配置AOP
+////实例化容器Builder
+//ContainerBuilder containerBuilder = new ContainerBuilder();
+//containerBuilder.RegisterType(typeof(AutofacDemo.AOPDemo.CustomAutofacAop));//注册AOP服务
+//containerBuilder.RegisterType<TestServiceCimpl>().As<ITestServiceC>().EnableInterfaceInterceptors();//注册实现类服务
+////创建容器
+//IContainer container = containerBuilder.Build();
+//ITestServiceC testServiceC = container.Resolve<ITestServiceC>();
+//testServiceC.SayHello("Hello World");
+#endregion
+
+#region 类上配置AOP
+//实例化容器Builder
+ContainerBuilder containerBuilder = new ContainerBuilder();
+containerBuilder.RegisterType(typeof(AutofacDemo.AOPDemo.CustomAutofacAop));//注册AOP服务
+containerBuilder.RegisterType<TestServiceDimpl>().As<ITestServiceD>().EnableClassInterceptors();//注册实现类服务
+//创建容器
+IContainer container = containerBuilder.Build();
+ITestServiceD testServiceD = container.Resolve<ITestServiceD>();
+testServiceD.SayHello("Hello World");
+Console.WriteLine("--------------------------");
+testServiceD.SayHi("Hello World");
 #endregion

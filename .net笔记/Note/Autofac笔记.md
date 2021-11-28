@@ -364,3 +364,102 @@ ITestServiceB testServiceB = container.Resolve<ITestServiceB>();//获取实例
 testServiceB.Hello("Hello, World!");
 ```
 
+## AOP的实现
+
+nuget安装Castle.Core与Autofac.Extras.DynamicProxy包
+
+在示例中的Autofac.Extras.DynamicProxy包6.0.0版本引用的是Castle.Core包4.4.0版本，所以需引用想对应的版本
+
+```powershell
+Install-Package Castle.Core -Version 4.4.0
+```
+
+```C#
+Install-Package Autofac.Extras.DynamicProxy -Version 6.0.0
+```
+
+自定义切面类CustomAutofacAop实现Castle.DynamicProxy.IInterceptor接口
+
+```C#
+using Castle.DynamicProxy;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AutofacDemo.AOPDemo
+{
+    public class CustomAutofacAop : Castle.DynamicProxy.IInterceptor
+    {
+        public void Intercept(IInvocation invocation)
+        {
+            Console.WriteLine($"{invocation.Method.Name}执行前.....");
+            invocation.Proceed();
+            Console.WriteLine($"{invocation.Method.Name}执行后.....");
+
+        }
+    }
+}
+```
+
+### 接口上配置AOP
+
+**注:如果在接口上配置AOP,则实现类中的所有实现方法都会起作用**
+
+- 引用using Autofac.Extras.DynamicProxy;命名空间
+- 在接口上打上InterceptAttribute特性
+
+![image-20211128200817172](images\image-20211128200817172.png)
+
+**注册服务时使AOP生效**
+
+- 将自定义的切面类CustomAutofacAop注入到容器中
+- 注册实现类服务时使用EnableInterfaceInterceptors方法使AOP生效
+
+代码示例
+
+```C#
+//实例化容器Builder
+ContainerBuilder containerBuilder = new ContainerBuilder();
+containerBuilder.RegisterType(typeof(AutofacDemo.AOPDemo.CustomAutofacAop));//注册AOP服务
+containerBuilder.RegisterType<TestServiceCimpl>().As<ITestServiceC>().EnableInterfaceInterceptors();//注册实现类服务
+//创建容器
+IContainer container = containerBuilder.Build();
+ITestServiceC testServiceC = container.Resolve<ITestServiceC>();
+testServiceC.SayHello("Hello World");
+```
+
+![image-20211128203555087](images\image-20211128203555087.png)
+
+### 类上配置AOP
+
+**注:如果在类上配置AOP,则实现类中的所有的虚方法(virtual)都会起作用**
+
+- 引用using Autofac.Extras.DynamicProxy;命名空间
+- 在类上打上InterceptAttribute特性
+
+![image-20211128205540843](images\image-20211128205540843.png)
+
+**注册服务时使AOP生效**
+
+- 将自定义的切面类CustomAutofacAop注入到容器中
+- 注册实现类服务时使用EnableClassInterceptors方法使AOP生效
+
+代码示例
+
+```C#
+//实例化容器Builder
+ContainerBuilder containerBuilder = new ContainerBuilder();
+containerBuilder.RegisterType(typeof(AutofacDemo.AOPDemo.CustomAutofacAop));//注册AOP服务
+containerBuilder.RegisterType<TestServiceDimpl>().As<ITestServiceD>().EnableClassInterceptors();//注册实现类服务
+//创建容器
+IContainer container = containerBuilder.Build();
+ITestServiceD testServiceD = container.Resolve<ITestServiceD>();
+testServiceD.SayHello("Hello World");
+Console.WriteLine("--------------------------");
+testServiceD.SayHi("Hello World");
+```
+
+![image-20211128205951338](images\image-20211128205951338.png)
+
