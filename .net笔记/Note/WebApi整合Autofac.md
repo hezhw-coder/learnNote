@@ -100,3 +100,27 @@ builder.Host.ConfigureContainer<ContainerBuilder>((HostBuilderContext, Container
 
 ![](images\image-20211128234128393.png)
 
+## WebApi中的过滤器(Filters)
+
+### ActionFilter
+
+- 新建一个类继承ActionFilterAttribute,并重写里面的方法(建议重写异步的方法，例子中使用的是同步方法)
+
+  ![image-20211130224708895](images\image-20211130224708895.png)
+
+**全局ActionFilter**
+
+在添加控制器的中间件注册全局过滤器
+
+```C#
+builder.Services.AddControllers(configure =>
+{
+    configure.Filters.Add<WebApi4Autofac.Filters.MyActionFilter>();
+
+}).AddNewtonsoftJson(options =>
+{
+    options.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
+});
+```
+
+![image-20211130224921405](images\image-20211130224921405.png)

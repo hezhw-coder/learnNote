@@ -25,13 +25,27 @@ builder.Host.ConfigureContainer<ContainerBuilder>((HostBuilderContext, Container
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(configure =>
+{
+    configure.Filters.Add<WebApi4Autofac.Filters.MyActionFilter>();
+
+}).AddNewtonsoftJson(options =>
+{
+    options.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
+});
+
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
 app.UseAuthorization();
+
+//app.Use((context, next) =>
+//{
+//    context.Request.EnableBuffering();
+//    return next();
+//});
 
 app.MapControllers();
 
