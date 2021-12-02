@@ -102,13 +102,37 @@ builder.Host.ConfigureContainer<ContainerBuilder>((HostBuilderContext, Container
 
 ## WebApi中的过滤器(Filters)
 
+过滤器管道
+
+![image-20211203000113909](images\image-20211203000113909.png)
+
 ### ActionFilter
 
 - 新建一个类继承ActionFilterAttribute,并重写里面的方法(建议重写异步的方法，例子中使用的是同步方法)
 
   ![image-20211130224708895](images\image-20211130224708895.png)
 
-**全局ActionFilter**
+#### **ActionFilter的多种配置方式及特点**
+
+- 在ControlleBa或者Action上标记特性，但是**定义的ActionFilter必须有且只有一个无参的构造函数,并且不支持依赖注入**
+
+  ![image-20211202230814048](images\image-20211202230814048.png)
+
+- 使用TypeFilter在ControlleBa或者Action上标记，**定义的ActionFilter可以没有无参的构造函数,支持依赖注入**
+
+  ![image-20211202231359850](images\image-20211202231359850.png)
+
+  ![image-20211202231538779](images\image-20211202231538779.png)
+
+- 定义特性实现IFilterFactory接口，可以没有无参数构造函数，可以支持依赖注入。但是要使用这种方式，要在【ConfigureContainer】方法中将过滤器注册到服务
+
+  ![image-20211202233033455](images\image-20211202233033455.png)
+
+  ![image-20211202234324621](images\image-20211202234324621.png)
+
+​       ![image-20211202234549738](images\image-20211202234549738.png)
+
+#### **全局ActionFilter**
 
 在添加控制器的中间件注册全局过滤器
 
@@ -124,3 +148,15 @@ builder.Services.AddControllers(configure =>
 ```
 
 ![image-20211130224921405](images\image-20211130224921405.png)
+
+#### Filter生效范围和控制执行顺序
+
+- 标记在Action上，就只对当前Action生效。
+- 标记在Controller上，就对改Controller上所有的Action生效。
+
+- 全局注册，对于当前整个项目中的Actioin都生效
+
+**如果有三个ActionFilter，分别注册全局、控制器、Action,则执行顺序(类似中间件)如下**
+
+先执行全局的OnActionExecuting—>控制器的OnActionExecuting—>Action上标记的OnActionExecuting—>Action上标记的OnActionExecuted—>控制器的OnActionExecuted——>全局的OnActionExecuted
+

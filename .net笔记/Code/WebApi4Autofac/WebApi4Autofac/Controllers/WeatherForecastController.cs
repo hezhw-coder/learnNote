@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using WebApi4Autofac.Filters;
 using WebApi4Autofac.IBLL;
 
 namespace WebApi4Autofac.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("[controller]")]   
+    [MyActionFilterB]
     public class WeatherForecastController : ControllerBase
     {
         private static readonly string[] Summaries = new[]
@@ -23,6 +25,9 @@ namespace WebApi4Autofac.Controllers
         }
 
         [HttpGet]
+        [MyActionFilterC(Order =1)]
+        [TypeFilter(typeof(MyActionFilterD))]
+        [MyFilterFactory(typeof(MyActionFilterD))]
         public IEnumerable<WeatherForecast> Get()
         {
             _testServiceA.SayHello("Hello World£¡");

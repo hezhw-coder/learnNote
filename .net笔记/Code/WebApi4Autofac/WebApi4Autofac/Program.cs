@@ -21,6 +21,7 @@ builder.Host.ConfigureContainer<ContainerBuilder>((HostBuilderContext, Container
     // Register the ConfigurationModule with Autofac.
     var module = new Autofac.Configuration.ConfigurationModule(config.Build());//将配置文件加载至module
     ContainerBuilder.RegisterModule(module);
+    ContainerBuilder.RegisterType(typeof(WebApi4Autofac.Filters.MyActionFilterD));
 });//调用ConfigureContainer注册服务
 
 // Add services to the container.
