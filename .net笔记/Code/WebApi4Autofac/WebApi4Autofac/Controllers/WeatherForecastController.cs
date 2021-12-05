@@ -25,6 +25,7 @@ namespace WebApi4Autofac.Controllers
         }
 
         [HttpGet]
+        [ShortCircuitingResourceFilter]
         [MyActionFilterC(Order =1)]
         [TypeFilter(typeof(MyActionFilterD))]
         [MyFilterFactory(typeof(MyActionFilterD))]

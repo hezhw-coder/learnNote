@@ -160,3 +160,28 @@ builder.Services.AddControllers(configure =>
 
 先执行全局的OnActionExecuting—>控制器的OnActionExecuting—>Action上标记的OnActionExecuting—>Action上标记的OnActionExecuted—>控制器的OnActionExecuted——>全局的OnActionExecuted
 
+详细可参考[ASP.NET Core 中的筛选器 | Microsoft Docs](https://docs.microsoft.com/zh-cn/aspnet/core/mvc/controllers/filters?view=aspnetcore-5.0#filter-scopes-and-order-of-execution)
+
+#### 过滤器设置短路
+
+可以在
+
+过滤器的Executing方法里给context的Result 属性赋值，这样Executing方法执行完后就不会往下执行其他过滤器，因为ResourceFilter 在管道中比较靠前，一般使用它来设置短路,详细可见[ASP.NET Core 中的筛选器 | Microsoft Docs](https://docs.microsoft.com/zh-cn/aspnet/core/mvc/controllers/filters?view=aspnetcore-5.0#cancellation-and-short-circuiting)
+
+![image-20211205231634029](images\image-20211205231634029.png)
+
+![image-20211205231715722](images\image-20211205231715722.png)
+
+由下图执行结果可见,并不会执行全局的Action过滤器及标记的过滤器的内容
+
+![image-20211205231924791](images\image-20211205231924791.png)
+
+### ResourceFilter 
+
+用途
+
+- 因为在管道中仅位于授权过滤器之后，可用来使大部分管道短路
+- 用于做缓存
+
+官网介绍可见[ASP.NET Core 中的筛选器 | Microsoft Docs](https://docs.microsoft.com/zh-cn/aspnet/core/mvc/controllers/filters?view=aspnetcore-5.0#resource-filters)
+
