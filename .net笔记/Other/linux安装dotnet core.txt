@@ -1,0 +1,10 @@
+
+切换到运行时压缩包目录，执行以下命令安装运行时环境
+mkdir -p "$HOME/dotnet" && tar zxf aspnetcore-runtime-3.1.9-linux-x64.tar.gz -C "$HOME/dotnet"
+export DOTNET_ROOT=$HOME/dotnet
+export PATH=$PATH:$HOME/dotnet
+
+切换到sdk压缩包目录，执行以下命令安装运行时环境
+mkdir -p "$HOME/dotnet" && tar zxf dotnet-sdk-3.1.403-linux-x64.tar.gz -C "$HOME/dotnet"
+export DOTNET_ROOT=$HOME/dotnet
+export PATH=$PATH:$HOME/dotnet

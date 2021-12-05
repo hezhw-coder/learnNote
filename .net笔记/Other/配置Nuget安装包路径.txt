@@ -1,0 +1,4 @@
+C:\Users\Administrator\AppData\Roaming\NuGet下的NuGet.Config文件增加节点
+  <config>
+    <add key="globalPackagesFolder" value="E:\Nuget\packages" />
+  </config>
