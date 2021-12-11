@@ -185,3 +185,20 @@ builder.Services.AddControllers(configure =>
 
 官网介绍可见[ASP.NET Core 中的筛选器 | Microsoft Docs](https://docs.microsoft.com/zh-cn/aspnet/core/mvc/controllers/filters?view=aspnetcore-5.0#resource-filters)
 
+###  ExceptionFilter 
+
+- 控制器实例化异常——能捕捉
+- 异常发生在Try-cache中——不能捕捉，因为异常已经被捕捉到了
+
+- 在视图中发生异常——不能捕捉
+- 在Service层（业务逻辑层）中发生异常——能捕捉
+
+- 在Action中发生异常——能捕捉
+- 请求错误路径异常——不能捕捉（但是可以通过中间件解决）
+
+若要处理异常，请将 [ExceptionHandled](https://docs.microsoft.com/zh-cn/dotnet/api/system.web.mvc.exceptioncontext.exceptionhandled#System_Web_Mvc_ExceptionContext_ExceptionHandled) 属性设置为 `true`，或编写响应。 这将停止传播异常。 异常筛选器无法将异常转变为“成功”。 只有操作筛选器才能执行该转变
+
+**建议使用中间件处理异常。 基于所调用的操作方法，仅当错误处理不同时，才使用ExceptionFilter 。 例如，应用可能具有用于 API 终结点和视图/HTML 的操作方法。 API 终结点可能返回 JSON 形式的错误信息，而基于视图的操作可能返回 HTML 形式的错误页**。
+
+官方文档详见[ASP.NET Core 中的筛选器 | Microsoft Docs](https://docs.microsoft.com/zh-cn/aspnet/core/mvc/controllers/filters?view=aspnetcore-5.0#exception-filters)
+
