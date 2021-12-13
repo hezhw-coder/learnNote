@@ -27,6 +27,32 @@ builder.Services.AddAuthentication(options =>
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.FromSeconds(5)
                 };
+                jwtBearerOptions.Events= new JwtBearerEvents
+                {
+                    //鉴权失败时调用,默认返回401,可自己自定义状态码及返回结果
+                    OnChallenge = context =>
+                    {
+                        //此处代码为终止.Net Core默认的返回类型和数据结果,变成由自己接管,自定义状态码时必须写上
+                        context.HandleResponse();
+                        //自定义返回的数据类型
+                        context.Response.ContentType = "text/plain;charset=UTF-8";
+                        ////自定义返回状态码，默认为401 我这里改成 200
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        ////输出数据结果
+                        //return context.Response.WriteAsync($"身份验证失败!");//如果前面什么都没处理，默认是返回401
+                        return Task.CompletedTask;
+                    },
+                    //授权失败时调用,默认返回403状态码，可自己自定义状态码及返回结果
+                    OnForbidden = context =>
+                    {
+                        context.Response.ContentType = "text/plain;charset=UTF-8";
+                        ////自定义返回状态码，默认为401 我这里改成 200
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        ////输出数据结果
+                        return context.Response.WriteAsync("权限不足");
+                    }
+
+                };
             });
 #endregion
 
