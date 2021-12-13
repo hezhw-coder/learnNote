@@ -39,8 +39,7 @@ builder.Services.AddAuthentication(options =>
                         ////自定义返回状态码，默认为401 我这里改成 200
                         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                         ////输出数据结果
-                        //return context.Response.WriteAsync($"身份验证失败!");//如果前面什么都没处理，默认是返回401
-                        return Task.CompletedTask;
+                        return context.Response.WriteAsync($"身份验证失败!");
                     },
                     //授权失败时调用,默认返回403状态码，可自己自定义状态码及返回结果
                     OnForbidden = context =>
