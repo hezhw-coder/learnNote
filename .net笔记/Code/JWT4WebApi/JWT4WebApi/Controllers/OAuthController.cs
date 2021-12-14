@@ -10,8 +10,15 @@ namespace JWT4WebApi.Controllers
     [ApiController]
     public class OAuthController : ControllerBase
     {
-        [HttpPost]
-        public string Token(string user, string password,string role)
+        /// <summary>
+        /// 获取JWT身份验证Token
+        /// </summary>
+        /// <param name="user">用户名</param>
+        /// <param name="password">密码</param>
+        /// <param name="role">角色</param>
+        /// <returns></returns>
+        [HttpPost] 
+        public string GetToken(string user, string password,string role)
         {
 
             //验证用户名和密码(一般从数据库认证)

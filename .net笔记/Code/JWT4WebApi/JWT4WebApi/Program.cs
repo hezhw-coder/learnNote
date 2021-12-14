@@ -1,11 +1,53 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Filters;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1",
+        Title = "ToDo API",
+        Description = "A simple example ASP.NET Core Web API",
+        TermsOfService = new Uri("https://example.com/terms"),
+        Contact = new OpenApiContact
+        {
+            Name = "Shayne Boyer",
+            Email = string.Empty,
+            Url = new Uri("https://twitter.com/spboyer"),
+        },
+        License = new OpenApiLicense
+        {
+            Name = "Use under LICX",
+            Url = new Uri("https://example.com/license"),
+        }
+    });
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+
+    //响应时再Header中添加JWT传入后台方法,开启授权小锁
+    c.OperationFilter<AddResponseHeadersFilter>();
+    c.OperationFilter<AppendAuthorizeToSummaryOperationFilter>();
+    c.OperationFilter<SecurityRequirementsOperationFilter>();
+    //配置方法
+    c.AddSecurityDefinition("oauth2",new OpenApiSecurityScheme()
+    {
+        Description = "请在输入Token前先添加Bearer和一个空格",
+        Name = "Authorization",
+        In=ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey
+    });
+
+});
 
 #region JWT服务
 builder.Services.AddAuthentication(options =>
@@ -27,7 +69,7 @@ builder.Services.AddAuthentication(options =>
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.FromSeconds(5)
                 };
-                jwtBearerOptions.Events= new JwtBearerEvents
+                jwtBearerOptions.Events = new JwtBearerEvents
                 {
                     //鉴权失败时调用,默认返回401,可自己自定义状态码及返回结果
                     OnChallenge = context =>
@@ -55,7 +97,16 @@ builder.Services.AddAuthentication(options =>
             });
 #endregion
 
+
+
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())//判断是否开发环境
+{
+    app.UseSwagger();
+
+    app.UseSwaggerUI();
+}
 
 // Configure the HTTP request pipeline.
 app.UseAuthentication();//启用鉴权中间件

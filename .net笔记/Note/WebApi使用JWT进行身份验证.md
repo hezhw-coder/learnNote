@@ -211,3 +211,135 @@ jwtBearerOptions.Events= new JwtBearerEvents
 
 ![image-20211213234714320](images\image-20211213234714320.png)
 
+## WebApi使用Swagger 
+
+建立项目时勾选OpenAPI，Visual Studio会自动建立
+
+![image-20211214154455011](images\image-20211214154455011.png)
+
+以下是在建立项目时不勾选
+
+安装Nuget包
+
+```powershell
+Install-Package Swashbuckle.AspNetCore -Version 6.2.3
+```
+
+添加相关服务与中间件
+
+![image-20211214144417688](images\image-20211214144417688.png)
+
+在launchSettings.json配置将默认启动的Url改成Swagger
+
+![image-20211214155214175](images\image-20211214155214175.png)
+
+## 注册Swagger服务时自定义文档描述
+
+```C#
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1",
+        Title = "ToDo API",
+        Description = "A simple example ASP.NET Core Web API",
+        TermsOfService = new Uri("https://example.com/terms"),
+        Contact = new OpenApiContact
+        {
+            Name = "Shayne Boyer",
+            Email = string.Empty,
+            Url = new Uri("https://twitter.com/spboyer"),
+        },
+        License = new OpenApiLicense
+        {
+            Name = "Use under LICX",
+            Url = new Uri("https://example.com/license"),
+        }
+    });
+});
+```
+
+![image-20211214160958664](images\image-20211214160958664.png)
+
+![image-20211214161125381](images\image-20211214161125381.png)
+
+## Swagger添加注释
+
+项目工程右键编辑项目文件,启用xml文档注释
+
+```xml
+<GenerateDocumentationFile>true</GenerateDocumentationFile><!--启用文档注释-->
+```
+
+![image-20211214162003312](images\image-20211214162003312.png)
+
+启用文档注释后如果没对属性或者类型添加注释Visual Studio会给出警告
+
+![image-20211214162156545](images\image-20211214162156545.png)
+
+项目文件文件添加以下配置可消除警告
+
+```xml
+<NoWarn>$(NoWarn);1591</NoWarn>
+```
+
+![image-20211214162505977](images\image-20211214162505977.png)
+
+Swagger配置注释服务
+
+```C#
+var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+c.IncludeXmlComments(xmlPath);
+```
+
+![image-20211214162911080](images\image-20211214162911080.png)
+
+项目启动后对应的方法就会有注释
+
+![image-20211214163120432](images\image-20211214163120432.png)
+
+### Swagger配置JWT认证功能
+
+安装Nuget包
+
+```powershell
+Install-Package Swashbuckle.AspNetCore.Filters -Version 7.0.2
+```
+
+AddSwaggerGen中进行配置
+
+```C#
+//响应时再Header中添加JWT传入后台方法,开启授权小锁
+c.OperationFilter<AddResponseHeadersFilter>();
+c.OperationFilter<AppendAuthorizeToSummaryOperationFilter>();
+c.OperationFilter<SecurityRequirementsOperationFilter>();
+//配置方法
+c.AddSecurityDefinition("oauth2",new OpenApiSecurityScheme()
+{
+   Description = "请在输入Token前先添加Bearer和一个空格",
+   Name = "Authorization",
+   In=ParameterLocation.Header,
+   Type = SecuritySchemeType.ApiKey
+});
+```
+
+![image-20211214170416346](images\image-20211214170416346.png)
+
+先通过生成Token的接口获取Token
+
+![image-20211214172949424](images\image-20211214172949424.png)
+
+没有输入Token的情况会返回身份验证失败
+
+![image-20211214173124328](images\image-20211214173124328.png)
+
+点击方法右边的小锁进行输入Token
+
+![image-20211214173327332](images\image-20211214173327332.png)
+
+![image-20211214173505157](images\image-20211214173505157.png)
+
+再次调用后可正常返回数据
+
+![image-20211214173557699](images\image-20211214173557699.png)
