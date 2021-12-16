@@ -344,3 +344,85 @@ c.AddSecurityDefinition("oauth2",new OpenApiSecurityScheme()
 
 ![image-20211214173557699](images\image-20211214173557699.png)
 
+## 模型验证
+
+新建Student模型类
+
+需引用 [System.ComponentModel.DataAnnotations](https://docs.microsoft.com/zh-cn/dotnet/api/system.componentmodel.dataannotations) 命名空间
+
+```C#
+using System.ComponentModel.DataAnnotations;
+
+namespace JWT4WebApi.Model
+{
+    public class Student
+    {
+        /// <summary>
+        /// 学号
+        /// </summary>
+        [Required(ErrorMessage ="学号不能为空!")]
+        public int? StuID { get; set; }
+
+        /// <summary>
+        /// 学生姓名
+        /// </summary>
+        [StringLength(20,ErrorMessage ="姓名最长不能超过20")]
+        public string? StuName { get; set; }
+
+        /// <summary>
+        /// 电话号码
+        /// </summary>
+        [RegularExpression(@"^1([358][0-9]|4[579]|66|7[0135678]|9[89])[0-9]{8}$",ErrorMessage ="电话号码格式不正确!")]
+        public string? PhoneNum { get; set; }
+        /// <summary>
+        /// 电子邮箱
+        /// </summary>
+        [EmailAddress(ErrorMessage ="邮箱格式不正确!")]
+        public string? Email { get; set; }
+    }
+}
+```
+
+![image-20211216225102209](images\image-20211216225102209.png)
+
+更多内置的检验特性请参阅[ASP.NET Core MVC 中的模型验证 | Microsoft Docs](https://docs.microsoft.com/zh-cn/aspnet/core/mvc/models/validation?view=aspnetcore-6.0#built-in-attributes)
+
+创建Student控制器
+
+![image-20211216225402644](images\image-20211216225402644.png)
+
+使用postman测试:
+
+![image-20211216225708334](images\image-20211216225708334.png)
+
+### 模型绑定校验失败自定义回参格式
+
+注册服务，当模型绑定失败(一般是类型砖汉失败)或者验证不过会调用InvalidModelStateResponseFactory注册的委托,详情请看官方文档
+
+[处理 ASP.NET Core Web API 中的错误 | Microsoft Docs](https://docs.microsoft.com/zh-cn/aspnet/core/web-api/handle-errors?view=aspnetcore-6.0#validation-failure-error-response)
+
+```C#
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        //var result = new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(context.ModelState);
+
+        //// TODO: add `using System.Net.Mime;` to resolve MediaTypeNames
+        //result.ContentTypes.Add(System.Net.Mime.MediaTypeNames.Application.Json);
+        //result.ContentTypes.Add(System.Net.Mime.MediaTypeNames.Application.Xml);
+        Dictionary<string, Microsoft.AspNetCore.Mvc.ModelBinding.ModelErrorCollection> dicErrors = new Dictionary<string, Microsoft.AspNetCore.Mvc.ModelBinding.ModelErrorCollection>(); 
+        foreach (var key in context.ModelState.Keys)
+        {
+            Microsoft.AspNetCore.Mvc.ModelBinding.ModelErrorCollection errors = context.ModelState[key].Errors;
+            dicErrors.Add(key, errors);
+        }
+
+        return new Microsoft.AspNetCore.Mvc.JsonResult(dicErrors);
+    };
+});
+```
+
+![image-20211216233157396](images\image-20211216233157396.png)
+

@@ -8,7 +8,26 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        //var result = new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(context.ModelState);
+
+        //// TODO: add `using System.Net.Mime;` to resolve MediaTypeNames
+        //result.ContentTypes.Add(System.Net.Mime.MediaTypeNames.Application.Json);
+        //result.ContentTypes.Add(System.Net.Mime.MediaTypeNames.Application.Xml);
+        Dictionary<string, Microsoft.AspNetCore.Mvc.ModelBinding.ModelErrorCollection> dicErrors = new Dictionary<string, Microsoft.AspNetCore.Mvc.ModelBinding.ModelErrorCollection>(); 
+        foreach (var key in context.ModelState.Keys)
+        {
+            Microsoft.AspNetCore.Mvc.ModelBinding.ModelErrorCollection errors = context.ModelState[key].Errors;
+            dicErrors.Add(key, errors);
+        }
+
+        return new Microsoft.AspNetCore.Mvc.JsonResult(dicErrors);
+    };
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
