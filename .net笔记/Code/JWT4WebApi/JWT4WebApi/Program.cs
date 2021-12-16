@@ -107,7 +107,7 @@ if (app.Environment.IsDevelopment())//判断是否开发环境
 
     app.UseSwaggerUI();
 }
-
+app.UseExceptionHandler("/error");
 // Configure the HTTP request pipeline.
 app.UseAuthentication();//启用鉴权中间件
 app.UseAuthorization();

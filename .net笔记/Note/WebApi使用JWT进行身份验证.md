@@ -299,7 +299,7 @@ c.IncludeXmlComments(xmlPath);
 
 ![image-20211214163120432](images\image-20211214163120432.png)
 
-### Swagger配置JWT认证功能
+## Swagger配置JWT认证功能
 
 安装Nuget包
 
@@ -343,3 +343,4 @@ c.AddSecurityDefinition("oauth2",new OpenApiSecurityScheme()
 再次调用后可正常返回数据
 
 ![image-20211214173557699](images\image-20211214173557699.png)
+
