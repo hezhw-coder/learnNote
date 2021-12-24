@@ -1,0 +1,42 @@
+# Idea部署MyEclipse的Web项目
+
+- 打开项目后，将之前的依赖的jar包设置成依赖项
+
+![image-20211223144103803](images\image-20211223144103803.png)
+
+![image-20211223144243742](images\image-20211223144243742.png)
+
+- 配置Modules
+
+![image-20211223144606376](images\image-20211223144606376.png)
+
+![image-20211223144738057](images\image-20211223144738057.png)
+
+项目节点下配置Web根目录
+
+![image-20211223145144478](images\image-20211223145144478.png)
+
+![image-20211223145549147](images\image-20211223145549147.png)
+
+
+
+配置web.xml的位置
+
+![image-20211223145400782](images\image-20211223145400782.png)
+
+- 配置Artifacts
+
+![image-20211223145845681](images\image-20211223145845681.png)
+
+![image-20211223145941949](images\image-20211223145941949.png)
+
+配置Tomcat
+
+![image-20211223150101732](images\image-20211223150101732.png)
+
+![image-20211223150157763](images\image-20211223150157763.png)
+
+![image-20211223150252560](images\image-20211223150252560.png)
+
+![image-20211223150811987](images\image-20211223150811987.png)
+

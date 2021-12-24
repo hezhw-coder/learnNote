@@ -426,3 +426,9 @@ builder.Services.AddControllers()
 
 ![image-20211216233157396](images\image-20211216233157396.png)
 
+## IIS上部署
+
+下载.net6运行时[下载 .NET 6.0 Runtime (v6.0.1) - Windows x64 Installer (microsoft.com)](https://dotnet.microsoft.com/zh-cn/download/dotnet/thank-you/runtime-6.0.1-windows-x64-installer)
+
+下载.net 6托管包[下载 ASP.NET Core 6.0 Runtime (v6.0.1) - Windows Hosting Bundle Installer (microsoft.com)](https://dotnet.microsoft.com/zh-cn/download/dotnet/thank-you/runtime-aspnetcore-6.0.1-windows-hosting-bundle-installer)
+
