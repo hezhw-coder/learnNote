@@ -74,7 +74,17 @@ docker load --input mywebapi.tar
 
 ## 卸载Docker
 
+
+
 ```powershell
 Uninstall-Package -Name docker -ProviderName DockerMsftProvider
+```
+
+```powershell
+Get-ContainerNetwork | Remove-ContainerNetwork
+```
+
+```
+Remove-Item "C:\ProgramData\Docker" -Recurse
 ```
 
