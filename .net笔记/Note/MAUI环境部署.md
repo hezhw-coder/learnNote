@@ -1,56 +1,54 @@
 # MAUI开发环境部署
 
-注:因开发`ios`和`macOs`需要mac系统，本文不做介绍
-
 ## 下载vs2022预览版
 
 本文使用的是`Microsoft Visual Studio Enterprise 2022 (64 位) - Preview  版本 17.3.0 Preview` 
 
 下载时需勾选MAUI开发环境
 
-![image-20220514190442332](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20220514190442332.png)
+![image-20220514190442332](images\image-20220514190442332.png)
 
 ### 创建`MAUI`项目
 
-![image-20220514191147272](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20220514191147272.png)
+![image-20220514191147272](images\image-20220514191147272.png)
 
 ### 创建完并等待项目初始化后,会弹出安装安卓SDK提示,点击接受
 
-![image-20220514191812317](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20220514191812317.png)
+![image-20220514191812317](images\image-20220514191812317.png)
 
 ### 目前谷歌的网址连不上,模拟器会下载失败，导致编译不过
 
-![image-20220514192528510](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20220514192528510.png)
+![image-20220514192528510](images\image-20220514192528510.png)
 
-![image-20220514192750304](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20220514192750304.png)
+![image-20220514192750304](images\image-20220514192750304.png)
 
 将其他地方的模拟器文件夹考到安卓SDK文件下,并重启vs，再进行编译就能成功(有可能需要重启多次或编译多次才能成功)
 
-![image-20220514193410061](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20220514193410061.png)
+![image-20220514193410061](images\image-20220514193410061.png)
 
-![image-20220514195530731](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20220514195530731.png)
+![image-20220514195530731](images\image-20220514195530731.png)
 
 ### 使用windows平台启动程序,如果有以下报错,需打开操作系统开发人员模式
 
-![image-20220514200748530](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20220514200748530.png)
+![image-20220514200748530](images\image-20220514200748530.png)
 
-![image-20220514200648462](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20220514200648462.png)
+![image-20220514200648462](images\image-20220514200648462.png)
 
-![image-20220514195946428](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20220514195946428.png)
+![image-20220514195946428](images\image-20220514195946428.png)
 
 #### 再次启动即可成功运行
 
-![image-20220514200943707](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20220514200943707.png)
+![image-20220514200943707](images\image-20220514200943707.png)
 
 ## 使用安卓模拟器调试程序
 
 ### 使用安卓的方式启动,会弹出模拟器镜像的新建界面，需创建及下载安卓模拟器镜像
 
-![image-20220514201628863](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20220514201628863.png)
+![image-20220514201628863](images\image-20220514201628863.png)
 
 ### 由于谷歌的链接被墙导致无法下载镜像
 
-![image-20220514201818462](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20220514201818462.png)
+![image-20220514201818462](images\image-20220514201818462.png)
 
 ### 安装安卓子系统
 
@@ -70,15 +68,15 @@ add-apppackage "D:\Documents\Downloads\MicrosoftCorporationII.WindowsSubsystemFo
 
 如果安装子系统出现以下问题,需要先安装`Microsoft.UI.Xaml.2.6_2.62108.18004.0_x64__8wekyb3d8bbwe.Appx`
 
-![image-20220514005647274](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20220514005647274.png)
+![image-20220514005647274](images\image-20220514005647274.png)
 
-![image-20220514202726339](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20220514202726339.png)
+![image-20220514202726339](images\image-20220514202726339.png)
 
 安装完后再次执行命令即可
 
 ## 打开安卓子系统报错
 
-![image-20220514203028316](E:\GitHub镜像库\hezhw-coder\learnNote\.net笔记\Note\images\image-20220514203028316.png)
+![image-20220514203028316](images\image-20220514203028316.png)
 
 参考以下地址可解决:
 
