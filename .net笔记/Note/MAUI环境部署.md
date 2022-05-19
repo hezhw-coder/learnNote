@@ -106,3 +106,88 @@ adb devices
 dotnet publish -f:net6.0-android -c:Release /p:AndroidSigningKeyPass=mypassword /p:AndroidSigningStorePass=mypassword
 ```
 
+
+
+# macOS部署MAUI环境
+
+## 安装MAC平台的.NET SDK[下载 .NET(Linux、macOS 和 Windows) (microsoft.com)](https://dotnet.microsoft.com/zh-cn/download)
+
+
+
+选择macOS(当前文档使用SDK 版本: 6.0.300)
+
+![image-20220518173719661](images\image-20220518173719661.png)
+
+## 安装[Xcode 13](https://xcodereleases.com/)
+
+文档中使用版本Xcode版本为13.4
+
+![image-20220518174235144](images\image-20220518174235144.png)
+
+## 安装.NET MAUI
+
+打开终端
+
+![image-20220518174844830](images\image-20220518174844830.png)
+
+![image-20220518174923890](images\image-20220518174923890.png)
+
+在终端中输入以下命令，等待安装完成
+
+```powershell
+sudo dotnet workload install maui --source https://api.nuget.org/v3/index.json
+```
+
+![image-20220518174612837](images\image-20220518174612837.png)
+
+## 使用 .NET CLI 创建新的 .NET MAUI 应用
+
+在 **终端**中输入以下命令
+
+```powershell
+dotnet new maui -n "MyMauiApp"
+```
+
+## 使用 .NET CLI 生成并运行 .NET MAUI 应用
+
+```powershell
+cd MyMauiApp
+```
+
+```powershell
+dotnet build -t:Run -f net6.0-maccatalyst
+```
+
+### 生成报错解决方式
+
+1. 提示`xcode-select: error: unable to get active developer directory, use sudo xcode-select --switch path/to/Xcode.app to set one (or see man xcode-select)`
+
+   ![image-20220518175453706](images\image-20220518175453706.png)
+
+   需执行以下命令安装
+
+   ```powershell
+    xcode-select --install
+   ```
+
+   ![image-20220518175726488](images\image-20220518175726488.png)
+
+   ![image-20220518180724377](images\image-20220518180724377.png)
+
+2. 提示找不到有效的Xcode app绑定路径
+
+   ![image-20220518175905207](images\image-20220518175905207.png)
+
+   打开Xcode绑定绑定命令行工具的路径
+
+   ![image-20220518180253265](images\image-20220518180253265.png)
+
+   ![image-20220518180519482](images\image-20220518180519482.png)
+
+   然后再进行生成就能生成成功了
+
+   ![image-20220518180817460](images\image-20220518180817460.png)
+
+   
+
+   ![image-20220518181001038](images\image-20220518181001038.png)
