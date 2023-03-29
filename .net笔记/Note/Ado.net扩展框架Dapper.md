@@ -268,7 +268,7 @@ Install-Package Oracle.ManagedDataAccess -Version 19.13.0
   //"ConnectionStrings": {
   //  "DbType": "SQLserver",
   //  "DbProvider": "System.Data.SqlClient.SqlClientFactory, System.Data",
-  //  "ConnectionString": "Data Source=192.168.182.128;Initial Catalog=BookStore;User ID=sa;pwd=WSZ@19950319CSD;Min Pool Size=1"
+  //  "ConnectionString": "Data Source=192.168.182.128;Initial Catalog=BookStore;User ID=sa;pwd=*********;Min Pool Size=1"
   //}
 
   //mysql

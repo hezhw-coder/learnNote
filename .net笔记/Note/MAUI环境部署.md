@@ -88,6 +88,10 @@ https://blog.csdn.net/FreeRxs/article/details/121483401
 bcdedit /set hypervisorlaunchtype auto
 ```
 
+最新版的win11还需要开启虚拟机平台
+
+![image-20230324104841329](images\image-20230324104841329.png)
+
 使用`adb`命令链接安卓子系统相关脚本
 
 ```powershell
@@ -97,6 +101,18 @@ adb connect 127.0.0.1:58526
 ```
 adb devices
 ```
+
+安装apk命令
+
+```powershell
+adb install "apk程序绝对路径"
+```
+
+apk安装就无法联网问题
+
+- 查看微软的虚拟网络是否被禁用
+
+  ![image-20230326103411039](images\image-20230326103411039.png)
 
 发布安卓程序
 

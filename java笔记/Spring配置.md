@@ -585,3 +585,340 @@ Maven引用spring-tx包
 </beans>
 ```
 
+# Spring完全基于注解
+
+## 环境部署
+
+导入Spring包
+
+```xml
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.9</version>
+    </dependency>
+```
+
+### 创建配置`SpringConfig`类
+
+```java
+package Config;
+
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ComponentScan("com.springdemo")
+public class SpringConfig {
+}
+```
+
+![image-20221214230428829](images\image-20221214230428829.png)
+
+### 声明一个接口及实现类
+
+```java
+package com.springdemo.service;
+
+public interface StudentService {
+    String getStudentNameById(String stuId);
+}
+```
+
+![image-20221214230749778](images\image-20221214230749778.png)
+
+```java
+package com.springdemo.impl;
+
+import com.springdemo.service.StudentService;
+import org.springframework.stereotype.Service;
+
+@Service
+public class StudentServiceimpl implements StudentService {
+    @Override
+    public String getStudentNameById(String stuId) {
+        return stuId;
+    }
+}
+```
+
+![image-20221214230845139](images\image-20221214230845139.png)
+
+### 测试代码
+
+```java
+package com.springdemo.impl;
+
+import Config.SpringConfig;
+import com.springdemo.service.StudentService;
+import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class StudentServiceimplTest {
+    @Test
+    public void test() {
+        ApplicationContext annotationConfigApplicationContext = new AnnotationConfigApplicationContext(SpringConfig.class);
+        StudentService studentService = annotationConfigApplicationContext.getBean(StudentService.class);
+        String studentName = studentService.getStudentNameById("666");
+        System.out.println(studentName);
+    }
+}
+```
+
+![image-20221214231336357](images\image-20221214231336357.png)
+
+## 配置AOP
+
+### 引入相关包
+
+```xml
+<dependency>
+    <groupId>org.aspectj</groupId>
+    <artifactId>aspectjweaver</artifactId>
+    <version>1.9.7</version>
+    <scope>runtime</scope>
+</dependency>
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-aspects</artifactId>
+    <version>5.3.9</version>
+</dependency>
+    <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjrt</artifactId>
+        <version>1.5.4</version>
+    </dependency>
+```
+
+### 新增切面类
+
+```java
+package com.springdemo.Aop;
+
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Component;
+
+@Component
+@Aspect
+public class AspectByAnnotation {
+
+    /*公共切入点*/
+    @Pointcut("execution(* com.springdemo.impl.*.*(..))")
+    public void pointCut() {
+
+    }
+
+    @Before("pointCut()")
+    public void Before() {
+        System.out.println("555");
+    }
+
+    @AfterReturning("pointCut()")
+    public void After() {
+        System.out.println("777");
+    }
+}
+```
+
+![image-20221214234016498](images\image-20221214234016498.png)
+
+### 配置允许aop设置
+
+![image-20221215183957619](images\image-20221215183957619.png)
+
+### 测试结果
+
+![image-20221214234142496](images\image-20221214234142496.png)
+
+## 整合数据库及事务
+
+引用spring.jdbc包
+
+```xml
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-jdbc</artifactId>
+        <version>5.3.9</version>
+    </dependency>
+```
+
+引用c3p0包
+
+```xml
+<dependency>
+    <groupId>com.mchange</groupId>
+    <artifactId>c3p0</artifactId>
+    <version>0.9.5.5</version>
+</dependency>
+```
+
+Maven引用spring-tx事务管理包
+
+```xml
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-tx</artifactId>
+    <version>5.3.9</version>
+</dependency>
+```
+
+```xml
+<dependency>
+    <groupId>com.oracle.database.jdbc</groupId>
+    <artifactId>ojdbc8</artifactId>
+    <version>19.17.0.0</version>
+</dependency>
+```
+
+### 自定义加载`properties`配置文件
+
+#### 新增jdbc的配置文件
+
+![image-20221215182558113](images\image-20221215182558113.png)
+
+#### 新建自定义类继承`PropertySourcesPlaceholderConfigurer`
+
+- 重写loadProperties方法
+
+```java
+package com.springdemo.common;
+
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.env.ConfigurablePropertyResolver;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.util.Objects;
+import java.util.Properties;
+/*
+自定义properties文件加载,方便对数据库连接串进行加密解密
+* */
+@Component
+public class SecretPropertyPlaceholderConfigurer extends PropertySourcesPlaceholderConfigurer {
+
+
+    @Override
+    protected void loadProperties(Properties props) throws IOException {
+        props.load(ClassLoader.getSystemResourceAsStream("jdbc.properties"));
+        String password = props.getProperty("password");
+        if (Objects.equals(password, "888888")) {
+            props.setProperty("password","hit_app#2022");
+        }
+        super.loadProperties(props);
+    }
+}
+```
+
+![image-20221215183415487](images\image-20221215183415487.png)
+
+### 配置DataSource数据源
+
+```java
+package Config;
+
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.*;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+
+import javax.sql.DataSource;
+import java.beans.PropertyVetoException;
+
+@Configuration
+@ComponentScan("com.springdemo")
+@EnableAspectJAutoProxy
+public class SpringConfig {
+
+    @Value("${driverClass}")
+    private String driverClass;
+
+    @Value("${jdbcUrl}")
+    private String jdbcUrl;
+
+    @Value("${user}")
+    private String user;
+
+    @Value("${password}")
+    private String password;
+
+    @Bean
+    public DataSource getDataSource() throws PropertyVetoException {
+        ComboPooledDataSource comboPooledDataSource = new ComboPooledDataSource();
+        comboPooledDataSource.setDriverClass(driverClass);
+        comboPooledDataSource.setJdbcUrl(jdbcUrl);
+        comboPooledDataSource.setUser(user);
+        comboPooledDataSource.setPassword(password);
+        return comboPooledDataSource;
+    }
+}
+
+```
+
+![image-20221215184614446](images\image-20221215184614446.png)
+
+### 配置事务管理器
+
+![image-20221216091639779](images\image-20221216091639779.png)
+
+![image-20221216092905614](images\image-20221216092905614.png)
+
+### 完整配置
+
+```java
+package Config;
+
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.*;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.TransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import javax.sql.DataSource;
+import java.beans.PropertyVetoException;
+
+@Configuration
+@ComponentScan("com.springdemo")
+@EnableAspectJAutoProxy
+@EnableTransactionManagement
+public class SpringConfig {
+
+    @Value("${driverClass}")
+    private String driverClass;
+
+    @Value("${jdbcUrl}")
+    private String jdbcUrl;
+
+    @Value("${user}")
+    private String user;
+
+    @Value("${password}")
+    private String password;
+
+    @Bean
+    public DataSource getDataSource() throws PropertyVetoException {
+        ComboPooledDataSource comboPooledDataSource = new ComboPooledDataSource();
+        comboPooledDataSource.setDriverClass(driverClass);
+        comboPooledDataSource.setJdbcUrl(jdbcUrl);
+        comboPooledDataSource.setUser(user);
+        comboPooledDataSource.setPassword(password);
+        return comboPooledDataSource;
+    }
+
+    @Bean
+    public TransactionManager getDataSourceTransactionManager(DataSource dataSource) {
+        DataSourceTransactionManager dataSourceTransactionManager = new DataSourceTransactionManager();
+        dataSourceTransactionManager.setDataSource(dataSource);
+        return  dataSourceTransactionManager;
+    }
+}
+```
+
