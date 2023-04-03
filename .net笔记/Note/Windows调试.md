@@ -43,9 +43,9 @@
 - 切换值x86环境(如果是32位应用程序在64位系统的任务管理器导出dump文件则需执行以下命令)
 
   ```powershell
-  .load C:\Users\he_zhw\Downloads\soswow64\soswow64.dll
   .load wow64exts
   !sw
+  .load C:\Users\he_zhw\Downloads\soswow64\soswow64.dll
   ```
 
   
