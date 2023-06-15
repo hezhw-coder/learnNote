@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: SpringBootDemo1 #服务名
+  profiles:
+    active: dev #当前环境名称
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+      discovery:
+        cluster-name: SH
+    #        namespace: 1a1d1570-3a62-44d4-8351-6635b8d246c9
+      config:
+        file-extension: yaml #文件后缀名
+    loadbalancer:
+      nacos:
+        enabled: true

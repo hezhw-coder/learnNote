@@ -203,9 +203,11 @@ SpringBoot启动类
 
 ## Nacos
 
-### Nacos服务注册中心
+### Nacos服务发现
 
-- #### 下载及安装Nacos服务端
+#### Nacos服务注册
+
+- ##### 下载及安装Nacos服务端
 
   下载地址https://github.com/alibaba/nacos/releases/tag/2.2.3
 
@@ -225,7 +227,7 @@ SpringBoot启动类
 
   
 
-- #### 父工程配置spring-cloud-alibaba的依赖描述
+- ##### 父工程配置spring-cloud-alibaba的依赖描述
 
   ```xml
               <dependency>
@@ -239,7 +241,7 @@ SpringBoot启动类
 
   ![image-20230605100507456](images\image-20230605100507456.png)
 
-- #### 将demo1与demo2的Eureka客户端的依赖注释掉,引用Nacos的客户端依赖
+- ##### 将demo1与demo2的Eureka客户端的依赖注释掉,引用Nacos的客户端依赖
 
   ```xml
   <dependency>
@@ -252,7 +254,7 @@ SpringBoot启动类
 
   
 
-- #### 注释掉Eureka的配置,添加Nacos的配置
+- ##### 注释掉Eureka的配置,添加Nacos的配置
 
   ```yaml
   spring:
@@ -265,11 +267,11 @@ SpringBoot启动类
 
   ![image-20230605115941435](images\image-20230605115941435.png)
 
-- #### 将替换成Nacos注册中心后会提示找不到服务提示
+- ##### 将替换成Nacos注册中心后会提示找不到服务提示
 
   ![image-20230605145035718](images\image-20230605145035718.png)
 
-  #### 原因与解决方式:由于Ribbon负载均衡组件已停止更新,新版本的SpringCloud已不集成,需引用loadbalancer组件
+  ##### 原因与解决方式:由于Ribbon负载均衡组件已停止更新,新版本的SpringCloud已不集成,需引用loadbalancer组件
 
   ![image-20230605143901155](images\image-20230605143901155.png)
 
@@ -282,3 +284,142 @@ SpringBoot启动类
 
   
 
+#### Nacos服务分级存储
+
+- ##### 添加集群属性
+
+```yaml
+spring:
+  application:
+    name: SpringBootDemo2
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+      discovery:
+        cluster-name: SH
+```
+
+![image-20230613182521930](images\image-20230613182521930.png)
+
+- ##### 开启Nacos负载均衡规则
+
+  在demo1开启负载均衡规则,则优先访问同集群的服务
+
+  ```yaml
+  server:
+    port: 8080
+  
+  spring:
+    application:
+      name: SpringBootDemo1
+    cloud:
+      nacos:
+        server-addr: localhost:8848
+        discovery:
+          cluster-name: SH
+      loadbalancer:
+        nacos:
+          enabled: true
+  ```
+
+  ![image-20230613185157097](images\image-20230613185157097.png)
+
+#### Nacos根据权重负载均衡
+
+- ##### 在服务列表的操作列点击详情进入集群配置界面
+
+  ![image-20230614173822905](images\image-20230614173822905.png)
+
+- ##### 在操作列点击编辑
+
+  ![image-20230614173957181](images\image-20230614173957181.png)
+
+#### Nacos环境隔离
+
+- ##### 创建命名空间
+
+  ![image-20230614175944924](images\image-20230614175944924.png)
+
+  ![image-20230614180015484](images\image-20230614180015484.png)
+
+- ##### 将demo1分配到dev命名空间下
+
+  ![image-20230614180352005](images\image-20230614180352005.png)
+
+- ##### 因demo1与demo2的服务不在同一个命名空间内,demo1远程调用demo2会报错
+
+  ![image-20230614180623494](images\image-20230614180623494.png)
+
+  ![image-20230614180651683](images\image-20230614180651683.png)
+
+  ![image-20230614180839981](images\image-20230614180839981.png)
+
+  
+
+### Nacos配置管理
+
+#### 统一配置管理
+
+- ##### 在Nacos配置列表添加配置
+
+  ![image-20230614183941883](images\image-20230614183941883.png)
+
+  ![image-20230614184253384](images\image-20230614184253384.png)
+
+  ![image-20230614184321044](images\image-20230614184321044.png)
+
+- ##### 引入Nacos的配置管理客户端依赖
+
+  ```xml
+  <dependency>
+      <groupId>com.alibaba.cloud</groupId>
+      <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+  </dependency>
+  ```
+
+  ![image-20230614183211466](images\image-20230614183211466.png)
+
+- ##### 创建个bootstrap.yml文件,并将Nacos的相关配置都移植过来
+
+  **在项目启动时bootstrap.yml优先于application.yml**
+
+  ![image-20230614184824073](images\image-20230614184824073.png)
+
+- ##### Spring Cloud 新版本默认将 Bootstrap 禁用，需要将 spring-cloud-[starter](https://so.csdn.net/so/search?q=starter&spm=1001.2101.3001.7020)-bootstrap 依赖引入到工程中,否则会报错
+
+  ![image-20230614185328720](images\image-20230614185328720.png)
+
+- ##### 引入相关依赖启动成功
+
+  ```xml
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-bootstrap</artifactId>
+   </dependency>
+  ```
+
+  ![image-20230615090607520](images\image-20230615090607520.png)
+
+- ##### 在接口中添加测试
+
+  ![image-20230615090836039](images\image-20230615090836039.png)
+
+  
+
+#### 配置热更新
+
+- ##### 方式一:在Value注入的类上加上@RefreshScope注解
+
+  ![image-20230615091415744](images\image-20230615091415744.png)
+
+- ##### 方式二:使用ConfigurationProperties注解
+
+  ![image-20230615092600462](images\image-20230615092600462.png)
+
+  ![image-20230615092633649](images\image-20230615092633649.png)
+
+  
+
+#### 配置共享
+
+#### 搭建Nacos集群

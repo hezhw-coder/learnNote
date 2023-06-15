@@ -1,0 +1,16 @@
+server:
+  port: 8081
+
+
+spring:
+  application:
+    name: SpringBootDemo2
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+      discovery:
+        cluster-name: SH
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8085/eureka/

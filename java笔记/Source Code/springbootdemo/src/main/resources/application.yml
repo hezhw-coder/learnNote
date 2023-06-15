@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.214.128:3306/bookstores
+    username: root
+    password: root
+
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+
+logging:
+  level:
+    root: info
+  file:
+    name: D:\LogTest\springtest.log
+  logback:
+    rollingpolicy:
+      file-name-pattern: ${LOG_FILE}.%d{yyyy-MM-dd}.%i.log
+      max-file-size: 1

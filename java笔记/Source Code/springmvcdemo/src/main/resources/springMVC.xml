@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+    <context:component-scan base-package="com.example.springmvcdemo"/><!--配置包扫描-->
+
+    <!--文件上传解析器 id必须为multipartResolver-->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="defaultEncoding" value="UTF-8"/><!--文件格式编码 默认是ISO8859-1-->
+        <property name="maxUploadSizePerFile" value="1048567"/><!--上传每个文件限制的大小 单位字节-->
+        <property name="maxUploadSize" value="3145728"/><!--上传文件的总大小-->
+        <property name="maxInMemorySize" value="1048576"/><!--上传文件的缓存大小-->
+    </bean>
+
+    <!--    &lt;!&ndash;配置了静态资源访问后需要手动配置映射器&ndash;&gt;
+        <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>
+
+
+        &lt;!&ndash;配置消息转换器&ndash;&gt;
+        <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+            <property name="messageConverters">
+                <list>
+                    <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+                </list>
+            </property>
+        </bean>-->
+    <mvc:annotation-driven/>
+
+    <!--配置支持静态资源的访问-->
+    <mvc:default-servlet-handler/>
+
+    <!--配置拦截器-->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/><!--/**是对多级路径的拦截,/*只能拦截医技路径-->
+            <bean class="com.example.springmvcdemo.Interceptor.MyInterceptor1"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+</beans>
