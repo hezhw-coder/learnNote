@@ -422,4 +422,54 @@ spring:
 
 #### 配置共享
 
+- ##### 在Nacos中创建一个服务名加后缀名的后缀
+
+  ![image-20230616161253446](D:\GitHubRepositories\learnNote\java笔记\images\image-20230616161253446.png)
+
+  ![image-20230616161432639](images\image-20230616161432639.png)
+
+- ##### 配置优先级
+
+  **原则:当远程配置(Nacos的配置)和application.yml的配置一样时,使用远程配置,当远程配置中带环境的配置与共享配置的属性一样时,使用带环境的配置**
+
 #### 搭建Nacos集群
+
+[集群部署说明 (nacos.io)](https://nacos.io/zh-cn/docs/v2/guide/admin/cluster-mode-quick-start.html)
+
+
+
+## Feign远程调用
+
+- ### 引入Feign依赖
+
+  ```xml
+  <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-openfeign</artifactId>
+  </dependency>
+  ```
+
+  ![image-20230616170442456](images\image-20230616170442456.png)
+
+- ### 在需要使用Feign的服务启动类中添加EnableFeignClients注解
+
+  ![image-20230616171017841](images\image-20230616171017841.png)
+
+- ### 编写Feign客户端
+
+  - #### 在demo1定义接口
+
+    ![image-20230616174318179](images\image-20230616174318179.png)
+
+  - ### 在demo2定义方法
+
+    ![image-20230616174548142](images\image-20230616174548142.png)
+
+  - ### 在demo1中调用
+
+    ![image-20230616174805633](images\image-20230616174805633.png)
+
+    
+
+- 
+

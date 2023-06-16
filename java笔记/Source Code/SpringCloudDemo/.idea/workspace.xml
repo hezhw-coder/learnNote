@@ -14,6 +14,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Class" />
+        <option value="Interface" />
       </list>
     </option>
   </component>
@@ -38,8 +39,8 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../springbootdemo" />
-    <property name="settings.editor.selected.configurable" value="MavenSettings" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -121,8 +122,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Spring Boot.SpringBootDemo1Application" />
         <item itemvalue="Spring Boot.SpringBootDemo2Application8082" />
+        <item itemvalue="Spring Boot.SpringBootDemo1Application" />
         <item itemvalue="Spring Boot.SpringBootDemo2Application" />
         <item itemvalue="Spring Boot.EurekaServerApplication" />
       </list>
@@ -144,21 +145,15 @@
       <workItem from="1686648344997" duration="4076000" />
       <workItem from="1686734905383" duration="4294000" />
       <workItem from="1686790599752" duration="2322000" />
+      <workItem from="1686793077207" duration="51000" />
+      <workItem from="1686902177313" duration="2167000" />
+      <workItem from="1686905672874" duration="129000" />
+      <workItem from="1686905884401" duration="1943000" />
+      <workItem from="1686908103609" duration="1034000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/SpringBootDemo1/src/main/java/com/he_zhw/springdemo/controller/DefultController.java</url>
-          <line>25</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

@@ -9,4 +9,5 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "testdemo")
 public class ConfigProperties {
 private String demostring;
+private String sharestring;
 }
