@@ -13,19 +13,16 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Class" />
         <option value="Interface" />
+        <option value="Class" />
       </list>
     </option>
   </component>
-  <component name="MavenImportPreferences">
-    <option name="generalSettings">
-      <MavenGeneralSettings>
-        <option name="userSettingsFile" value="C:\Users\he_zhw\.m2\settings.xml" />
-      </MavenGeneralSettings>
-    </option>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../.." />
   </component>
   <component name="ProjectId" id="2QiomTImODZSxBE8icsnGYaqhXd" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -39,16 +36,20 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
+    <property name="jdk.selected.JAVA_MODULE" value="1.8" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/GatewayDemo/src/main/resources" />
+    <property name="settings.editor.selected.configurable" value="MavenSettings" />
+  </component>
+  <component name="ReactorSettings">
+    <option name="notificationShown" value="true" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\GitHubRepositories\learnNote\java笔记\Source Code\SpringCloudDemo\GatewayDemo\src\main\resources" />
       <recent name="C:\Users\he_zhw\IdeaProjects\SpringCloudDemo\Eureka-Server\src\main\java" />
       <recent name="C:\Users\he_zhw\IdeaProjects\SpringCloudDemo\Eureka-Server\src\main\resources" />
       <recent name="C:\Users\he_zhw\IdeaProjects\SpringCloudDemo\SpringBootDemo2\src\main\resources" />
       <recent name="C:\Users\he_zhw\IdeaProjects\SpringCloudDemo\SpringBootDemo2\src\main\java" />
-      <recent name="C:\Users\he_zhw\IdeaProjects\SpringCloudDemo\SpringBootDemo1\src\main\resources" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -58,7 +59,7 @@
       </set>
     </option>
   </component>
-  <component name="RunManager" selected="Spring Boot.EurekaServerApplication">
+  <component name="RunManager" selected="Spring Boot.GatewayDemoApplication">
     <configuration name="EurekaServerApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
       <module name="Eureka-Server" />
       <extension name="coverage">
@@ -68,6 +69,19 @@
         </pattern>
       </extension>
       <option name="SPRING_BOOT_MAIN_CLASS" value="springdemo.EurekaServerApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="GatewayDemoApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <module name="GatewayDemo" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.he_zhw.springdemo.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.he_zhw.springdemo.GatewayDemoApplication" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -119,12 +133,14 @@
       <item itemvalue="Spring Boot.SpringBootDemo2Application8082" />
       <item itemvalue="Spring Boot.SpringBootDemo2Application" />
       <item itemvalue="Spring Boot.EurekaServerApplication" />
+      <item itemvalue="Spring Boot.GatewayDemoApplication" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Spring Boot.SpringBootDemo2Application8082" />
+        <item itemvalue="Spring Boot.GatewayDemoApplication" />
         <item itemvalue="Spring Boot.SpringBootDemo1Application" />
         <item itemvalue="Spring Boot.SpringBootDemo2Application" />
+        <item itemvalue="Spring Boot.SpringBootDemo2Application8082" />
         <item itemvalue="Spring Boot.EurekaServerApplication" />
       </list>
     </recent_temporary>
@@ -150,10 +166,50 @@
       <workItem from="1686905672874" duration="129000" />
       <workItem from="1686905884401" duration="1943000" />
       <workItem from="1686908103609" duration="1034000" />
+      <workItem from="1686921317068" duration="4523000" />
+      <workItem from="1686994184012" duration="10258000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/SpringBootDemo2/src/main/java/springdemo/controller/DefultController.java</url>
+          <line>26</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/SpringBootDemo2/src/main/java/springdemo/controller/DefultController.java</url>
+          <line>27</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/SpringBootDemo1/src/main/java/com/he_zhw/springdemo/controller/DefultController.java</url>
+          <line>39</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="SpringBootApplicationConfigurationType">
+        <watch expression="Integer.toString(id)" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

@@ -469,7 +469,756 @@ spring:
 
     ![image-20230616174805633](images\image-20230616174805633.png)
 
+
+### 修改Feign日志级别
+
+#### 首先开启默认日志
+
+```yaml
+logging:
+  level:
+    com:
+      he_zhw: debug
+```
+
+![image-20230617165524916](images\image-20230617165524916.png)
+
+- #### 基于配置文件
+
+  - #### 全局生效
+
+    ```yaml
+    feign:
+      client:
+        config:
+          default: # 这里用default就是全局配置，如果是写服务名称，则是针对某个微服务的配置
+            loggerLevel: FULL # 日志级别
+    ```
+
+    ![image-20230617165739484](images\image-20230617165739484.png)
+
+  - #### 局部生效
+
+    ```yaml
+    feign:
+      client:
+        config:
+          SpringBootDemo2: # 这里用default就是全局配置，如果是写服务名称，则是针对某个微服务的配置
+            loggerLevel: FULL # 日志级别
+    ```
+
+    ![image-20230617170039285](images\image-20230617170039285.png)
+
+- #### 基于代码
+
+  **增加一个Feign配置类**
+
+  ```java
+  package com.he_zhw.springdemo.config;
+  
+  import feign.Logger;
+  import org.springframework.context.annotation.Bean;
+  
+  public class FeignClientConfiguration {
+      @Bean
+      public Logger.Level feignLogLevel() {
+          return Logger.Level.FULL;
+      }
+  }
+  ```
+
+  ![image-20230617171158097](images\image-20230617171158097.png)
+
+  - #### 全局生效
+
+    **在配置类的EnableFeignClients注解中引入自定义配置类**
+
+    ![image-20230617171421911](images\image-20230617171421911.png)
+
+  - #### 局部生效
+
+    **在Feign接口类的FeignClient注解上引入自定义配置类**
+
+    ![image-20230617172126307](images\image-20230617172126307.png)
+
+### Feign的性能优化
+
+![image-20230617172335745](images\image-20230617172335745.png)
+
+- #### 方式一:使用连接池代替默认的URLConnection
+
+  **本例中使用HttpClient代替URLConnection**
+
+  - #### **引入HttpClient依赖**
+
+    ```xml
+    <dependency>
+        <groupId>io.github.openfeign</groupId>
+        <artifactId>feign-httpclient</artifactId>
+    </dependency>
+    ```
+
+    ![image-20230617173239160](images\image-20230617173239160.png)
+
+  - #### **配置连接池**
+
+    ```yaml
+    feign:
+      httpclient:
+        enabled: true # 开feign对HttpClient的支持
+        max-connections: 200 # 最大的连接数
+        max-connections-per-route: 50 # 每个路径的最大连接数
+    ```
+
+    ![image-20230617174013403](images\image-20230617174013403.png)
+
+  - 
+
+- #### 方式二:日志级别，最好用basic或none
+
+### Feign的最佳实践
+
+- #### 方式一:给消费者的FeignClient和提供者的controller定义统一的父接口作为标准
+
+- #### 方式二:将FeignClient抽取为独立模块，并且把接口有关的POJO、默认的Feign配置都放到这个模块中，提供给所有消费者使用
+
+## 网关Gateway
+
+### 网关功能:
+
+- #### 身份认证和权限校验
+
+- #### 服务路由、负载均衡
+
+- #### 请求限流
+
+### Gateway环境搭建
+
+#### 新建一个微服务
+
+![image-20230617175444063](images\image-20230617175444063.png)
+
+![image-20230617175556664](images\image-20230617175556664.png)
+
+![image-20230617180453965](images\image-20230617180453965.png)
+
+
+
+#### 引入Gateway与Nacos服务注册发现依赖
+
+```xml
+ <!--nacos服务发现依赖-->
+ <dependency>
+     <groupId>com.alibaba.cloud</groupId>
+     <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+ </dependency>
+ <!--Gateway依赖-->
+ <dependency>
+     <groupId>org.springframework.cloud</groupId>
+     <artifactId>spring-cloud-starter-gateway</artifactId>
+ </dependency>
+```
+
+![image-20230617180108602](images\image-20230617180108602.png)
+
+### 引入负载均衡依赖
+
+- #### 低版本SpringCloud内置了Ribbon负载均衡，可不用引用此依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+</dependency>
+```
+
+![image-20230617183629417](images\image-20230617183629417.png)
+
+#### 编写路由配置及nacos地址
+
+```yaml
+server:
+  port: 10010 #网关端口
+spring:
+  application:
+    name: GatewayDemo #服务名
+  profiles:
+    active: dev #当前环境名称
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+      discovery:
+        cluster-name: SH
+
+    gateway:
+      routes:
+        - id: Spring-BootDemo2 # 路由id，自定义，只要唯一即可
+          uri: lb://SpringBootDemo2 # 路由的目标地址 Lb就是负载均衡，后面跟服务名称uri
+          predicates: #路由言，也就是判断请求是否符合路由规则的条件
+            - Path=/demo2/** # 这个是按照路径匹配，只要以/demo2/开头就符合要求
+```
+
+![image-20230617183905153](images\image-20230617183905153.png)
+
+### 访问测试
+
+- #### 访问demo2能成功
+
+  ![image-20230617184057134](images\image-20230617184057134.png)
+
+- #### 访问FeignDemo失败
+
+  ![image-20230617184222339](images\image-20230617184222339.png)
+
+### 断言工厂
+
+官方参考文档链接[Spring Cloud Gateway](https://docs.spring.io/spring-cloud-gateway/docs/4.0.6/reference/html/#gateway-request-predicates-factories)
+
+![image-20230618095232154](images\image-20230618095232154.png)
+
+### 网关过滤器(GatewayFilter)
+
+**GatewayFilter是网关中提供的一种过滤器,可以对进入网关的请求和微服务返回的响应做处理**
+
+官方参考文档链接[Spring Cloud Gateway](https://docs.spring.io/spring-cloud-gateway/docs/4.0.6/reference/html/#gatewayfilter-factories)
+
+![image-20230618100147374](images\image-20230618100147374.png)
+
+#### 示例
+
+- #### 给访问SpringBootDemo2的请求添加请求头
+
+  ```yaml
+      gateway:
+        routes:
+          - id: Spring-BootDemo2 # 路由id，自定义，只要唯一即可
+            uri: lb://SpringBootDemo2 # 路由的目标地址 Lb就是负载均衡，后面跟服务名称uri
+            predicates: #路由言，也就是判断请求是否符合路由规则的条件
+              - Path=/demo2/** # 这个是按照路径匹配，只要以/demo2/开头就符合要求
+            filters:
+            - AddRequestHeader=X-Request-red, blue
+  ```
+
+  ![image-20230618103116838](images\image-20230618103116838.png)
+
+- #### 接收请求头
+
+  ![image-20230618103315591](images\image-20230618103315591.png)
+
+- #### 测试
+
+  ![image-20230618103430545](images\image-20230618103430545.png)
+
+#### 默认过滤器
+
+**对网关代理的服务都生效**
+
+```yaml
+server:
+  port: 10010 #网关端口
+spring:
+  application:
+    name: GatewayDemo #服务名
+  profiles:
+    active: dev #当前环境名称
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+      discovery:
+        cluster-name: SH
+
+    gateway:
+      routes:
+        - id: Spring-BootDemo2 # 路由id，自定义，只要唯一即可
+          uri: lb://SpringBootDemo2 # 路由的目标地址 Lb就是负载均衡，后面跟服务名称uri
+          predicates: #路由言，也就是判断请求是否符合路由规则的条件
+            - Path=/demo2/** # 这个是按照路径匹配，只要以/demo2/开头就符合要求
+#          filters:
+#          - AddRequestHeader=X-Request-red, blue
+        - id: Spring-BootDemo1 # 路由id，自定义，只要唯一即可
+          uri: lb://SpringBootDemo1 # 路由的目标地址 Lb就是负载均衡，后面跟服务名称uri
+          predicates: #路由言，也就是判断请求是否符合路由规则的条件
+            - Path=/demo1/** # 这个是按照路径匹配，只要以/demo2/开头就符合要求
+      default-filters:
+        - AddRequestHeader=X-Request-red, blue
+```
+
+![image-20230618104900756](images\image-20230618104900756.png)
+
+#### 全局过滤器(GlobalFilter)
+
+**与默认过滤器的功能一致,也是处理一切进入网关的请求和微服务响应,区别在于默认过滤器通过配置定义，处理逻辑是固定的。而全局过滤器的逻辑需要自己写代码实现**
+
+![image-20230618111026019](images\image-20230618111026019.png)
+
+- #### 编写实现类实现GlobalFilter接口
+
+  ```java
+  package com.he_zhw.springdemo;
+  
+  import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+  import org.springframework.cloud.gateway.filter.GlobalFilter;
+  import org.springframework.http.HttpStatus;
+  import org.springframework.http.server.reactive.ServerHttpRequest;
+  import org.springframework.stereotype.Component;
+  import org.springframework.util.MultiValueMap;
+  import org.springframework.web.server.ServerWebExchange;
+  import reactor.core.publisher.Mono;
+  
+  @Order(1)
+  @Component
+  public class AuthorizeFilter implements GlobalFilter {
+      @Override
+      public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+          // 1.获取请求参数
+          ServerHttpRequest request = exchange.getRequest();
+          MultiValueMap<String,String> params = request.getQueryParams();//
+          // 2.获取参数中的 authorization 参数
+          String auth = params.getFirst("authorization");
+          //3.判断参数值是否等于 admin
+          if ("admin".equals(auth)) {
+              // 4.是，放行
+              return chain.filter(exchange);
+          }
+          // 5.否，拦截
+          // 5.1.设置状态码
+          exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+          // 5.2.拦截请求
+          return exchange.getResponse().setComplete();
+      }
+  }
+  ```
+
+  ![image-20230618110526001](images\image-20230618110526001.png)
+
+- #### 测试
+
+  - 当传的参数authorization为admin时可以访问
+
+    ![image-20230618110837397](images\image-20230618110837397.png)
+
+  - 当传的参数authorization不为admin时返回401
+
+    ![image-20230618110937769](images\image-20230618110937769.png)
+
+  
+
+#### 过滤器的执行顺序
+
+![image-20230618111439233](images\image-20230618111439233.png)
+
+#### 跨域问题处理
+
+![image-20230618111823854](images\image-20230618111823854.png)
+
+## Docker
+
+### Docker的安装
+
+Docker CE 支持 64 位版本 CentOS 7，并且要求内核版本不低于 3.10， CentOS 7 满足最低内核的要求，所以我们在CentOS 7安装Docker。
+
+#### 卸载Docker(防止和之前的版本冲突)
+
+```shell
+yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-selinux \
+                  docker-engine-selinux \
+                  docker-engine \
+                  docker-ce
+```
+
+没有匹配说明之前未安装过Docker
+
+![image-20230618163500970](images\image-20230618163500970.png)
+
+#### 安装docker
+
+首先需要虚拟机联网，安装yum工具
+
+```sh
+yum install -y yum-utils \
+           device-mapper-persistent-data \
+           lvm2 --skip-broken
+```
+
+然后更新本地镜像源：
+
+```shell
+# 设置docker镜像源
+yum-config-manager \
+    --add-repo \
+    https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+    
+sed -i 's/download.docker.com/mirrors.aliyun.com\/docker-ce/g' /etc/yum.repos.d/docker-ce.repo
+
+yum makecache fast
+```
+
+然后输入以下命令安装Docker：
+
+```shell
+yum install -y docker-ce
+```
+
+docker-ce为社区免费版本。
+
+#### 启动docker
+
+Docker应用需要用到各种端口，逐一去修改防火墙设置。因此学习过程中直接关闭防火墙！
+
+```sh
+# 关闭
+systemctl stop firewalld
+# 禁止开机启动防火墙
+systemctl disable firewalld
+```
+
+通过命令启动docker：
+
+```sh
+systemctl start docker  # 启动docker服务
+
+systemctl stop docker  # 停止docker服务
+
+systemctl restart docker  # 重启docker服务
+```
+
+
+
+然后输入命令，可以查看docker版本：
+
+```sh
+docker -v
+```
+
+如图：
+
+![image-20230618170516026](images\image-20230618170516026.png)
+
+#### 配置镜像加速
+
+docker官方镜像仓库网速较差，我们需要设置国内镜像服务：
+
+参考阿里云的镜像加速文档：https://cr.console.aliyun.com/cn-hangzhou/instances/mirrors
+
+![image-20230618171037230](images\image-20230618171037230.png)
+
+```sh
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <<-'EOF'
+{
+  "registry-mirrors": ["https://chwdftpk.mirror.aliyuncs.com"]
+}
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
+![image-20230618171008141](images\image-20230618171008141.png)
+
+验证是否写入
+
+```sh
+cat /etc/docker/daemon.json
+```
+
+![image-20230618171325883](images\image-20230618171325883.png)
+
+### Docker的基本操作
+
+[Docker Hub Container Image Library | App Containerization](https://hub.docker.com/)
+
+- 拉取镜像
+
+  ```sh
+  docker pull nginx #默认拉取最新的版本
+  
+  docker pull nginx:stable-alpine3.17-slim #拉取版本号为stable-alpine3.17-slim的版本
+  ```
+
+  ![image-20230618172508887](images\image-20230618172508887.png)
+
+  ![image-20230618173154087](images\image-20230618173154087.png)
+
+- 查看镜像
+
+  ```sh
+  docker images
+  ```
+
+  ![image-20230618173228495](images\image-20230618173228495.png)
+
+- 将镜像导出到本地
+
+  ```sh
+  docker save -o nginx.tar nginx:latest
+  ```
+
+  本地就会出现对应的文件
+
+  ![image-20230618173744086](images\image-20230618173744086.png)
+
+- 删除服务中的镜像
+
+  ```sh
+  docker rmi nginx:latest #根据镜像名和版本号删除
+  
+  docker rmi 605c77e624dd #根据镜像ID删除
+  ```
+
+  ![image-20230618174043327](images\image-20230618174043327.png)
+
+  再根据docker images命令查询时就查不出镜像
+
+  ![image-20230618174142641](images\image-20230618174142641.png)
+
+- 从本地重新加载镜像
+
+  ```sh
+  docker load -i nginx.tar
+  ```
+
+  ![image-20230618174409862](images\image-20230618174409862.png)
+
+  再根据docker images命令查询时可查出镜像
+
+  ![image-20230618174521538](images\image-20230618174521538.png)
+
+
+
+#### 运行容器
+
+![image-20230618174921713](images\image-20230618174921713.png)
+
+- 在官网有对应的命令执行
+
+  ![image-20230618175322229](images\image-20230618175322229.png)
+
+- 示例
+
+  ![image-20230618175634836](images\image-20230618175634836.png)
+
+  ```sh
+  docker run --name nginxtest -p 80:80 -d nginx
+  ```
+
+  ![image-20230618175833065](images\image-20230618175833065.png)
+
+- 查看容器的执行状态
+
+  ```sh
+  docker ps
+  ```
+
+  ![image-20230618180238055](images\image-20230618180238055.png)
+
+- 访问服务器的80端口
+
+  ![image-20230618180345440](images\image-20230618180345440.png)
+
+- 查看nginx日志
+
+  ```sh
+  docker logs nginxtest
+  
+  docker logs -f nginxtest  #持续跟踪日志
+  ```
+
+  ![image-20230618180621136](images\image-20230618180621136.png)
+
+- 进入容器内部
+
+  ![image-20230618181040901](images\image-20230618181040901.png)
+
+  
+
+  ```sh
+  docker exec -it nginxtest bash
+  ```
+
+  - 切换到nginx容器静态页面的位置
+
+    ```sh
+    cd /usr/share/nginx/html
+    ```
+
+  - 将欢迎页的Welcome to nginx!替换成中文
+
+    ```sh
+    sed -i 's#Welcome to nginx#欢迎来到nginx#g' index.html
+    sed -i 's#<head>#<head><meta charset="utf-8">#g' index.html
+    ```
+
+    ![image-20230618182607847](images\image-20230618182607847.png)
+
     
 
-- 
+- 退出容器
+
+- ```
+  exit
+  ```
+
+  ![image-20230618183113448](images\image-20230618183113448.png)
+
+- 停止容器
+
+  ```sh
+  docker stop nginxtest
+  ```
+
+  查看容器状态
+
+  ```sh
+  docker ps -a #docker ps只能查看在运行的容器,查看停止的容器需要添加-a参数
+  ```
+
+  ![image-20230618183214788](images\image-20230618183214788.png)
+
+- 重启容器
+
+  ```sh
+  docker start nginxtest
+  ```
+
+  
+
+- 删除容器
+
+  ```sh
+  docker rm nginxtest #不能删除正在运行的容器
+  ```
+
+  ![image-20230618193955189](images\image-20230618193955189.png)
+
+  ```sh
+  docker rm -f nginxtest #强制删除正在运行的容器
+  ```
+
+  ![image-20230618194620626](images\image-20230618194620626.png)
+
+
+
+### Docker数据卷
+
+**数据卷 (volume)是一个虚拟目录，指向宿主机文件系统中的某个目录**
+
+#### 数据卷基本命令
+
+![image-20230618200007430](images\image-20230618200007430.png)
+
+- #### 创建一个名为html的数据卷
+
+  ```sh
+  docker volume create html
+  ```
+
+  
+
+- 列出现有的数据卷
+
+  ```sh
+  docker volume ls
+  ```
+
+  ![image-20230618200501069](images\image-20230618200501069.png)
+
+- 显示数据卷的具体信息
+
+  ```sh
+  docker volume inspect html
+  ```
+
+  ![image-20230618200811296](images\image-20230618200811296.png)
+
+- 删除未使用的数据卷
+
+  ```sh
+  docker volume prune
+  ```
+
+  
+
+- 删除指定的数据卷
+
+  ```sh
+  docker volume rm html
+  ```
+
+  
+
+#### 数据卷挂载
+
+![image-20230618201236904](images\image-20230618201236904.png)
+
+- #### 启动时将nginx的静态目录挂载到html数据卷
+
+```sh
+docker run --name nginxtest -v html:/usr/share/nginx/html -p 80:80 -d nginx
+```
+
+![image-20230618203626577](images\image-20230618203626577.png)
+
+- #### 目录挂载
+
+  ![ ](images\image-20230618205635163.png)
+  
+  - ##### 将mysql镜像包上传到temp目录下
+  
+    ![image-20230618215108002](images\image-20230618215108002.png)
+  
+  - ##### 将镜像包加载为镜像
+  
+    ```sh
+    docker load -i mysql.tar
+    ```
+  
+    ![image-20230618215954444](images\image-20230618215954444.png)
+  
+  - ##### 在temp目录下创建mysql/data文件夹，用于存放数据文件
+  
+    ```sh
+    mkdir -p mysql/data
+    ```
+  
+  - ##### 在temp目录下创建mysql/conf文件夹，用于存放mysql配置文件
+  
+    ```sh
+    mkdir -p mysql/conf
+    ```
+  
+  - ##### 将hmy.cnf配置文件上传到conf目录下
+  
+    ![image-20230618220509195](images\image-20230618220509195.png)
+  
+  - ##### 运行容器
+  
+    ```sh
+    docker run \
+    --name mysql \
+    -e MYSQL_ROOT_PASSWORD=root \
+    -p 3306:3306 \
+    -v /tmp/mysql/conf/hmy.cnf:/etc/mysql/conf.d/hmy.cnf \
+    -v /tmp/mysql/data:/var/lib/mysql \
+    -d \
+    mysql:5.7.25
+    ```
+  
+    ![image-20230618221937563](images\image-20230618221937563.png)
+  
+  - ##### 执行上述命令后data文件夹会生成数据文件
+  
+    ![image-20230618223310732](images\image-20230618223310732.png)
+  
+  - ##### 连接测试
+  
+    ![image-20230618223510378](images\image-20230618223510378.png)
+
+
 

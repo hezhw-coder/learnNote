@@ -7,15 +7,17 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="SpringBootDemo2" />
+        <module name="GatewayDemo" />
         <module name="Eureka-Server" />
         <module name="SpringBootDemo1" />
+        <module name="SpringBootDemo2" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="Eureka-Server" options="-parameters" />
+      <module name="GatewayDemo" options="-parameters" />
       <module name="SpringBootDemo1" options="-parameters" />
       <module name="SpringBootDemo2" options="-parameters" />
     </option>

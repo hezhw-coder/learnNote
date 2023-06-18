@@ -1,6 +1,20 @@
 server:
   port: 8080
 
+logging:
+  level:
+    com:
+      he_zhw: debug
+
+
+
+
+#feign:
+#  client:
+#    config:
+#      SpringBootDemo2: # 这里用default就是全局配置，如果是写服务名称，则是针对某个微服务的配置
+#        loggerLevel: FULL # 日志级别
+
 #spring:
 #  application:
 #    name: SpringBootDemo1
@@ -16,4 +30,9 @@ server:
 #eureka:
 #  client:
 #    service-url:
+feign:
+  httpclient:
+    enabled: true # 开feign对HttpClient的支持
+    max-connections: 200 # 最大的连接数
+    max-connections-per-route: 50 # 每个路径的最大连接数
 #      defaultZone: http://localhost:8085/eureka/

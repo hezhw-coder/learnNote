@@ -1,0 +1,27 @@
+server:
+  port: 10010 #网关端口
+spring:
+  application:
+    name: GatewayDemo #服务名
+  profiles:
+    active: dev #当前环境名称
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+      discovery:
+        cluster-name: SH
+
+    gateway:
+      routes:
+        - id: Spring-BootDemo2 # 路由id，自定义，只要唯一即可
+          uri: lb://SpringBootDemo2 # 路由的目标地址 Lb就是负载均衡，后面跟服务名称uri
+          predicates: #路由言，也就是判断请求是否符合路由规则的条件
+            - Path=/demo2/** # 这个是按照路径匹配，只要以/demo2/开头就符合要求
+#          filters:
+#          - AddRequestHeader=X-Request-red, blue
+        - id: Spring-BootDemo1 # 路由id，自定义，只要唯一即可
+          uri: lb://SpringBootDemo1 # 路由的目标地址 Lb就是负载均衡，后面跟服务名称uri
+          predicates: #路由言，也就是判断请求是否符合路由规则的条件
+            - Path=/demo1/** # 这个是按照路径匹配，只要以/demo1/开头就符合要求
+      default-filters:
+        - AddRequestHeader=X-Request-red, blue

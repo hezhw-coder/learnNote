@@ -11,6 +11,7 @@
         <module>SpringBootDemo1</module>
         <module>SpringBootDemo2</module>
         <module>Eureka-Server</module>
+        <module>GatewayDemo</module>
     </modules>
 
     <packaging>pom</packaging>
