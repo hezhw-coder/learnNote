@@ -1222,3 +1222,256 @@ docker run --name nginxtest -v html:/usr/share/nginx/html -p 80:80 -d nginx
 
 
 
+## MQ
+
+### 常用技术
+
+![image-20230629173107705](images\image-20230629173107705.png)
+
+### RabbitMQ
+
+#### 安装RabbitMQ
+
+docker拉取镜像安装包
+
+```shell
+docker pull rabbitmq
+```
+
+![image-20230629175843444](images\image-20230629175843444.png)
+
+#### 运行RabbitMQ
+
+linux下执行
+
+```shell
+docker run \
+ -e RABBITMQ_DEFAULT_USER=root \
+ -e RABBITMQ_DEFAULT_PASS=root \
+ --name mq \
+ --hostname mq1 \
+ -p 15672:15672 \
+ -p 5672:5672 \
+ -d \
+ rabbitmq:latest
+```
+
+Windows下执行
+
+```shell
+docker run  -e RABBITMQ_DEFAULT_USER=root  -e RABBITMQ_DEFAULT_PASS=root  --name mq  --hostname mq1  -p 15672:15672  -p 5672:5672  -d  rabbitmq:latest
+```
+
+![image-20230629180505200](images\image-20230629180505200.png)
+
+#### 解决无法访问管理界面的问题
+
+- 进入mq容器内部
+
+```shell
+docker exec -it  mq   /bin/bash
+```
+
+- 将配置文件内容，true改为false
+
+```shell
+cd  /etc/rabbitmq/conf.d/
+echo management_agent.disable_metrics_collector = false > management_agent.disable_metrics_collector.conf
+```
+
+![image-20230629182707139](images\image-20230629182707139.png)
+
+- 执行以下命令安装插件
+
+```shell
+rabbitmq-plugins enable rabbitmq_management
+```
+
+![image-20230629181653440](images\image-20230629181653440.png)
+
+- 退出容器
+
+  ```shell
+  exit
+  ```
+
+  
+
+- 重启容器
+
+```shell
+docker restart  mq
+```
+
+
+
+![image-20230629182006041](images\image-20230629182006041.png)
+
+#### 常见消息模型
+
+![image-20230630085326046](images\image-20230630085326046.png)
+
+![image-20230630090455043](images\image-20230630090455043.png)
+
+### SpringAMQP
+
+![image-20230630091144582](images\image-20230630091144582.png)
+
+#### SpringAMQP案例
+
+
+
+##### 实现基本消息队列(BasicQueue)
+
+![image-20230630093347365](images\image-20230630093347365.png)
+
+- ###### 在父工程中引入amqp的依赖
+
+  ```xml
+  <!--AMQP依赖,包含RabbitMQ-->
+  <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-amqp</artifactId>
+  </dependency>
+  ```
+
+  ![image-20230630094152903](images\image-20230630094152903.png)
+
+- 首先要在RabbitMQ管理平台上创建一个队列,否则发布者发送不成功,但是不会报错,消费者启动时没有队列会启动失败
+
+  ![image-20230630104817902](images\image-20230630104817902.png)
+
+- ###### 创建发布者微服务
+
+  
+
+  ![image-20230630095141598](images\image-20230630095141598.png)
+
+  
+
+  - ###### 编写配置文件
+
+    ![image-20230630095609735](images\image-20230630095609735.png)
+
+  - 编写发送测试服务
+
+    ![image-20230630102425576](images\image-20230630102425576.png)
+
+- ###### 编写消费者微服务
+
+  - 编写配置文件
+
+    ![image-20230630105208801](images\image-20230630105208801.png)
+
+  - 创建监听类获取消息
+
+    ![image-20230630105258046](images\image-20230630105258046.png)
+
+  
+
+##### 实现工作队列(WorkQueue)
+
+- 工作模型(多个消费者,避免消息堆积)
+
+  ![1688094093313](images\1688094093313.jpg)
+
+![image-20230630144012338](images\image-20230630144012338.png)
+
+- ###### 编写发布服务
+
+  ![image-20230630144634198](images\image-20230630144634198.png)
+
+- ###### 编写消费服务
+
+  ![image-20230630150642862](images\image-20230630150642862.png)
+
+- ###### 设置消费者的预取功能
+
+  ![image-20230630151819335](images\image-20230630151819335.png)
+
+##### 实现发布订阅模型
+
+![image-20230630152247538](images\image-20230630152247538.png)
+
+###### FanoutExchange
+
+![image-20230630153057841](images\image-20230630153057841.png)
+
+- ###### 在管理界面创建名为FanoutDemo的Fanout类型交换机
+
+  ![image-20230630153804648](images\image-20230630153804648.png)
+
+- 创建两个新的测试队列
+
+  ![image-20230630154201761](images\image-20230630154201761.png)
+
+- 在消费者编写交换机与队列的绑定配置类
+
+  ![image-20230630155537345](images\image-20230630155537345.png)
+
+- 启动消费者服务后可看到成功绑定
+
+  ![image-20230630155727908](images\image-20230630155727908.png)
+
+- 编写消息接收代码
+
+  ![image-20230630160304561](images\image-20230630160304561.png)
+
+- 编写消息发送代码
+
+  ![image-20230630161017547](images\image-20230630161017547.png)
+
+###### DirectExchange
+
+Direct Exchange 会将接收到的消息根据规则路由到指定的Queue，因此称为路由模式 (routes)
+
+- 编写消费者服务
+
+  ![image-20230630164819017](images\image-20230630164819017.png)
+
+- 消费者启动后会自动添加多个队列
+
+  ![image-20230630165107452](images\image-20230630165107452.png)
+
+- 发布者服务编写
+
+  ![image-20230630165720731](images\image-20230630165720731.png)
+
+##### 消息转换器
+
+- 消息发送默认是java-jdk格式
+
+  ![image-20230630173922150](images\image-20230630173922150.png)
+
+- 发送者使用json格式
+
+  - 导入jackson依赖
+
+    ```xml
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+    </dependency>
+    ```
+
+    ![image-20230630174334930](images\image-20230630174334930.png)
+
+  - 配置消息转换
+
+    ![image-20230630174620847](images\image-20230630174620847.png)
+
+    ![image-20230630174811674](images\image-20230630174811674.png)
+
+    
+
+- 接收者使用json格式
+
+  - 引依赖及配置消息转换
+
+    ![image-20230630175256480](images\image-20230630175256480.png)
+
+- 编写消息接收方法
+
+  ![image-20230630175547440](images\image-20230630175547440.png)
+
+  
