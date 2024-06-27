@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<objects xmlns="http://www.springframework.net">
-  <object id="EmployeeInfoService" type="SpringDotnetDemo.Ado.net.Service.EmployeeInfoService,SpringDotnetDemo">
+<objects xmlns="http://www.springframework.net" default-lazy-init="false">
+  <object id="EmployeeInfoService" type="SpringDotnetDemo.Ado.net.Service.EmployeeInfoService,SpringDotnetDemo" lazy-init="true">
     <property name="EmployeeInfoDao" ref="EmployeeInfoDao"/>
   </object>
 </objects>

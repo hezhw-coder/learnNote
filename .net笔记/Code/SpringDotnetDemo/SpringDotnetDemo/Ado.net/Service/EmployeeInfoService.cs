@@ -8,6 +8,10 @@ namespace SpringDotnetDemo.Ado.net.Service
 {
     public class EmployeeInfoService : IEmployeeInfoService
     {
+        public EmployeeInfoService()
+        {
+
+        }
         public EmployeeInfoDao EmployeeInfoDao { get; set; }
 
         public int updateEmployeeInfo(string employeeID)
