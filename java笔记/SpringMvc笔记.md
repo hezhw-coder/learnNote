@@ -393,3 +393,33 @@ public class MyWebMvcConfigurer implements WebMvcConfigurer {
 
   
 
+## 报错处理
+
+- .使用spring-webmvc6.1.10版本需要至少jdk17才能编译,tomcat10才能部署
+
+- 运行服务时报一下错误
+
+  ![image-20240627220445532](images\image-20240627220445532.png)
+
+  解决方案,引用tomcat-api
+
+  ```xml
+  <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-api</artifactId>
+      <version>10.1.25</version>
+  </dependency>
+  ```
+
+  ![image-20240627220639703](images\image-20240627220639703.png)
+
+- Tomcat启动日志出现乱码
+
+  ![image-20240627220909863](images\image-20240627220909863.png)
+
+  解决方式:修改Tomcat目录下日志配置文件的编码参数
+
+  ![image-20240627221057553](images\image-20240627221057553.png)
+
+  
+
