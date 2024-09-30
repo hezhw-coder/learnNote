@@ -15,7 +15,7 @@
   \**********************/
 /***/ (() => {
 
-eval("function sum(a, b) {\n    return a + b;\n}\nconsole.log(sum(1, 2));\n\n\n//# sourceURL=webpack://webpack-tsdemo/./src/index.ts?");
+eval("function createSquare(config) {\n    // ...\n}\nlet mySquare = createSquare({ colour: \"red\", width: 100 });\n\n\n//# sourceURL=webpack://webpack-tsdemo/./src/index.ts?");
 
 /***/ })
 

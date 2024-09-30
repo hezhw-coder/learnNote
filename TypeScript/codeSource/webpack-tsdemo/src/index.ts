@@ -1,4 +1,10 @@
-function sum(a: number, b: number): number {
-    return a + b;
+interface SquareConfig {
+    color: string;
+    width: number;
 }
-console.log(sum(1,2));
+
+function createSquare(config: SquareConfig): void {
+    // ...
+}
+
+let mySquare = createSquare({ colour: "red", width: 100 });
