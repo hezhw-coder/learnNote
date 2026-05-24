@@ -1,0 +1,49 @@
+#! redis-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: redis
+    namespace: medical-data-center
+    labels:
+        com.docker.compose.project: medical-data-center
+        com.docker.compose.service: redis
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: medical-data-center
+            com.docker.compose.service: redis
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: medical-data-center
+                com.docker.compose.service: redis
+                com.docker.compose.network.mdc-net: "true"
+        spec:
+            restartPolicy: unless-stopped
+            containers:
+                - name: mdc-redis
+                  image: redis:7.2-alpine
+                  imagePullPolicy: IfNotPresent
+                  args:
+                    - redis-server
+                    - --appendonly
+                    - yes
+                    - --requirepass
+                    - mdcRedis@123
+                  env:
+                    - name: TZ
+                      value: "Asia/Shanghai"
+                  ports:
+                    - name: redis-6379
+                      containerPort: 6379
+                  volumeMounts:
+                    - name: data
+                      mountPath: /data
+            volumes:
+                - name: data
+                  persistentVolumeClaim:
+                    claimName: redis-redis-data

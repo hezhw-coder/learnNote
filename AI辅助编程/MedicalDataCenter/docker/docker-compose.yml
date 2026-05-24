@@ -1,0 +1,130 @@
+name: medical-data-center
+
+services:
+  tidb:
+    image: pingcap/tidb:v7.5.1
+    container_name: mdc-tidb
+    restart: unless-stopped
+    command:
+      - --store=unistore
+      - --path=/data/tidb
+      - --log-file=/var/log/tidb/tidb.log
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - "4000:4000"
+      - "10080:10080"
+    volumes:
+      - tidb-data:/data/tidb
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:10080/status || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    networks:
+      - mdc-net
+
+  tidb-init:
+    image: mysql:8.4
+    container_name: mdc-tidb-init
+    restart: "no"
+    depends_on:
+      tidb:
+        condition: service_healthy
+    command:
+      - /bin/sh
+      - -c
+      - |
+        until mysqladmin ping -h "$$MDC_DB_HOST" -P "$$MDC_DB_PORT" -u "$$MDC_DB_USERNAME" --silent; do
+          echo "waiting for tidb..."
+          sleep 2
+        done
+        mysql -h "$$MDC_DB_HOST" -P "$$MDC_DB_PORT" -u "$$MDC_DB_USERNAME" -e "CREATE DATABASE IF NOT EXISTS \`$$MDC_DB_NAME\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
+    environment:
+      MDC_DB_HOST: tidb
+      MDC_DB_PORT: 4000
+      MDC_DB_NAME: ${MDC_DB_NAME:-medical_data_center}
+      MDC_DB_USERNAME: ${MDC_DB_USERNAME:-root}
+    networks:
+      - mdc-net
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: mdc-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:-mdcRedis@123}"]
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - mdc-net
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/backend/Dockerfile
+      args:
+        JAR_FILE: backend/target/medical-data-center.jar
+    container_name: mdc-backend
+    restart: unless-stopped
+    depends_on:
+      tidb:
+        condition: service_healthy
+      tidb-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+    environment:
+      TZ: Asia/Shanghai
+      SPRING_PROFILES_ACTIVE: docker
+      MDC_DB_HOST: tidb
+      MDC_DB_PORT: 4000
+      MDC_DB_NAME: ${MDC_DB_NAME:-medical_data_center}
+      MDC_DB_USERNAME: ${MDC_DB_USERNAME:-root}
+      MDC_DB_PASSWORD: ${MDC_DB_PASSWORD:-}
+      MDC_REDIS_HOST: redis
+      MDC_REDIS_PORT: 6379
+      MDC_REDIS_PASSWORD: ${REDIS_PASSWORD:-mdcRedis@123}
+      MDC_EXPORT_BASE_PATH: /data/exports
+      MDC_JWT_SECRET: ${MDC_JWT_SECRET:-medical-data-center-docker-jwt-secret-2026}
+      MDC_OAUTH2_ISSUER: ${MDC_OAUTH2_ISSUER:-http://localhost:8080}
+    ports:
+      - "18080:8080"
+    volumes:
+      - backend-logs:/app/logs
+      - backend-exports:/data/exports
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+    networks:
+      - mdc-net
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/frontend/Dockerfile
+    container_name: mdc-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "18081:80"
+    networks:
+      - mdc-net
+
+networks:
+  mdc-net:
+    driver: bridge
+
+volumes:
+  tidb-data:
+  redis-data:
+  backend-logs:
+  backend-exports:

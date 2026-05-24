@@ -1,0 +1,315 @@
+{
+  "info": {
+    "_postman_id": "fe8c7f91-5ed4-4f4f-a467-0307fd8241ba",
+    "name": "MedicalDataCenter",
+    "description": "医疗数据中心 MVP 一期基础联调集合，覆盖登录、数据源、ETL、报表与开放 API。",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "gatewayUrl",
+      "value": "http://localhost"
+    },
+    {
+      "key": "username",
+      "value": "admin"
+    },
+    {
+      "key": "password",
+      "value": "ChangeMe123!"
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "clientId",
+      "value": "replace_client_id"
+    },
+    {
+      "key": "clientSecret",
+      "value": "replace_client_secret"
+    },
+    {
+      "key": "openApiToken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Request-Id",
+            "value": "postman-health-check"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/actuator/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["actuator", "health"]
+        }
+      }
+    },
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json && json.data && json.data.accessToken) {",
+              "  pm.collectionVariables.set('adminToken', json.data.accessToken);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "postman-login"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "List Data Sources",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "postman-list-data-sources"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/data-sources?pageNum=1&pageSize=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "data-sources"],
+          "query": [
+            {
+              "key": "pageNum",
+              "value": "1"
+            },
+            {
+              "key": "pageSize",
+              "value": "10"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Test TiDB Connection",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "postman-test-datasource"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"TiDB-MVP\",\n  \"code\": \"tidb_mvp\",\n  \"type\": \"TIDB\",\n  \"host\": \"localhost\",\n  \"port\": 4000,\n  \"databaseName\": \"medical_data_center\",\n  \"username\": \"root\",\n  \"password\": \"\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/data-sources/test",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "data-sources", "test"]
+        }
+      }
+    },
+    {
+      "name": "Create ETL Job",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "postman-create-etl-job"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"patient_increment_job\",\n  \"sourceId\": 1,\n  \"sourceTable\": \"patient_info\",\n  \"extractMode\": \"INCREMENTAL\",\n  \"incrementField\": \"update_time\",\n  \"odsTable\": \"ods_his_patient_info\",\n  \"cdmEntity\": \"PATIENT\",\n  \"cron\": \"0 */30 * * * ?\",\n  \"fieldMappings\": [\n    {\n      \"sourceField\": \"patient_name\",\n      \"targetField\": \"patient_name\",\n      \"transformers\": []\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/etl/jobs",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "etl", "jobs"]
+        }
+      }
+    },
+    {
+      "name": "Create Report Template",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "postman-create-report"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"门诊趋势\",\n  \"datasetId\": 1,\n  \"layoutSchema\": {\n    \"version\": \"1.0.0\",\n    \"components\": [\n      {\n        \"id\": \"chart_1\",\n        \"type\": \"LINE\",\n        \"title\": \"近30天门诊趋势\",\n        \"bindings\": {\n          \"dimension\": \"visit_date\",\n          \"metrics\": [\"visit_count\"]\n        }\n      }\n    ]\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/reports/templates",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "reports", "templates"]
+        }
+      }
+    },
+    {
+      "name": "OAuth2 Token",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const basic = btoa(pm.collectionVariables.get('clientId') + ':' + pm.collectionVariables.get('clientSecret'));",
+              "pm.variables.set('basicToken', basic);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json && json.access_token) {",
+              "  pm.collectionVariables.set('openApiToken', json.access_token);",
+              "} else if (json && json.data && json.data.accessToken) {",
+              "  pm.collectionVariables.set('openApiToken', json.data.accessToken);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Basic {{basicToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "postman-oauth-token"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "grant_type",
+              "value": "client_credentials",
+              "type": "text"
+            },
+            {
+              "key": "scope",
+              "value": "patient.read encounter.read lab.read",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/oauth2/token",
+          "host": ["{{baseUrl}}"],
+          "path": ["oauth2", "token"]
+        }
+      }
+    },
+    {
+      "name": "Open API - Patients",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{openApiToken}}"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "postman-openapi-patients"
+          }
+        ],
+        "url": {
+          "raw": "{{gatewayUrl}}/open-api/v1/patients?pageNum=1&pageSize=10",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["open-api", "v1", "patients"],
+          "query": [
+            {
+              "key": "pageNum",
+              "value": "1"
+            },
+            {
+              "key": "pageSize",
+              "value": "10"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

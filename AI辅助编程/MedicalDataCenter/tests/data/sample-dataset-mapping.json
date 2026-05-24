@@ -1,0 +1,43 @@
+{
+  "jobName": "patient_increment_job",
+  "sourceType": "MYSQL",
+  "sourceTable": "patient_info",
+  "extractMode": "INCREMENTAL",
+  "incrementField": "update_time",
+  "odsTable": "ods_his_patient_info",
+  "cdmEntity": "PATIENT",
+  "fieldMappings": [
+    {
+      "sourceField": "patient_id",
+      "targetField": "patient_code",
+      "transformers": []
+    },
+    {
+      "sourceField": "patient_name",
+      "targetField": "patient_name",
+      "transformers": []
+    },
+    {
+      "sourceField": "gender_code",
+      "targetField": "gender",
+      "transformers": ["DICT:GENDER"]
+    },
+    {
+      "sourceField": "birthday",
+      "targetField": "birth_date",
+      "transformers": ["DATE:yyyy-MM-dd"]
+    },
+    {
+      "sourceField": "mobile",
+      "targetField": "mobile",
+      "transformers": ["MASK:MOBILE"]
+    }
+  ],
+  "filters": [
+    {
+      "field": "deleted",
+      "operator": "=",
+      "value": 0
+    }
+  ]
+}

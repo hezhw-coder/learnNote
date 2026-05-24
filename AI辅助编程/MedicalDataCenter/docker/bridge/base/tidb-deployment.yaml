@@ -1,0 +1,59 @@
+#! tidb-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: tidb
+    namespace: medical-data-center
+    labels:
+        com.docker.compose.project: medical-data-center
+        com.docker.compose.service: tidb
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: medical-data-center
+            com.docker.compose.service: tidb
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: medical-data-center
+                com.docker.compose.service: tidb
+                com.docker.compose.network.mdc-net: "true"
+        spec:
+            restartPolicy: unless-stopped
+            containers:
+                - name: mdc-tidb
+                  image: pingcap/tidb:v7.5.1
+                  imagePullPolicy: IfNotPresent
+                  args:
+                    - --store=unistore
+                    - --path=/data/tidb
+                    - --log-file=/var/log/tidb/tidb.log
+                  env:
+                    - name: TZ
+                      value: "Asia/Shanghai"
+                  livenessProbe:
+                    exec:
+                        command:
+                            - /bin/sh
+                            - -c
+                            - wget --no-verbose --tries=1 --spider http://127.0.0.1:10080/status || exit 1
+                    periodSeconds: 10
+                    initialDelaySeconds: 20
+                    timeoutSeconds: 5
+                    failureThreshold: 20
+                  ports:
+                    - name: tidb-4000
+                      containerPort: 4000
+                    - name: tidb-10080
+                      containerPort: 10080
+                  volumeMounts:
+                    - name: data-tidb
+                      mountPath: /data/tidb
+            volumes:
+                - name: data-tidb
+                  persistentVolumeClaim:
+                    claimName: tidb-tidb-data

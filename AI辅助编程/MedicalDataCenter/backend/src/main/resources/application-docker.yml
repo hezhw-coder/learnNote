@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MDC_DB_HOST:tidb}:${MDC_DB_PORT:4000}/${MDC_DB_NAME:medical_data_center}?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    username: ${MDC_DB_USERNAME:root}
+    password: ${MDC_DB_PASSWORD:}
+  data:
+    redis:
+      host: ${MDC_REDIS_HOST:redis}
+      port: ${MDC_REDIS_PORT:6379}
+      password: ${MDC_REDIS_PASSWORD:}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+app:
+  security:
+    issuer: ${MDC_OAUTH2_ISSUER:http://localhost:8080}
+    jwt-secret: ${MDC_JWT_SECRET:medical-data-center-docker-jwt-secret-2026}
+    allowed-origin-patterns: ${MDC_ALLOWED_ORIGIN_PATTERNS:http://localhost:18081,http://127.0.0.1:18081,http://localhost:18080,http://127.0.0.1:18080,http://localhost:5173,http://127.0.0.1:5173}
+  export:
+    dir: ${MDC_EXPORT_BASE_PATH:/data/exports}

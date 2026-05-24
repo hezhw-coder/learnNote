@@ -1,0 +1,82 @@
+#! backend-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: backend
+    namespace: medical-data-center
+    labels:
+        com.docker.compose.project: medical-data-center
+        com.docker.compose.service: backend
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: medical-data-center
+            com.docker.compose.service: backend
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: medical-data-center
+                com.docker.compose.service: backend
+                com.docker.compose.network.mdc-net: "true"
+        spec:
+            restartPolicy: unless-stopped
+            containers:
+                - name: mdc-backend
+                  image: medical-data-center-backend
+                  imagePullPolicy: IfNotPresent
+                  env:
+                    - name: MDC_DB_HOST
+                      value: "tidb"
+                    - name: MDC_DB_NAME
+                      value: "medical_data_center"
+                    - name: MDC_DB_PASSWORD
+                      value: ""
+                    - name: MDC_DB_PORT
+                      value: "4000"
+                    - name: MDC_DB_USERNAME
+                      value: "root"
+                    - name: MDC_EXPORT_BASE_PATH
+                      value: "/data/exports"
+                    - name: MDC_JWT_SECRET
+                      value: "medical-data-center-docker-jwt-secret-2026"
+                    - name: MDC_OAUTH2_ISSUER
+                      value: "http://localhost:8080"
+                    - name: MDC_REDIS_HOST
+                      value: "redis"
+                    - name: MDC_REDIS_PASSWORD
+                      value: "mdcRedis@123"
+                    - name: MDC_REDIS_PORT
+                      value: "6379"
+                    - name: SPRING_PROFILES_ACTIVE
+                      value: "docker"
+                    - name: TZ
+                      value: "Asia/Shanghai"
+                  livenessProbe:
+                    exec:
+                        command:
+                            - /bin/sh
+                            - -c
+                            - wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/actuator/health || exit 1
+                    periodSeconds: 30
+                    initialDelaySeconds: 40
+                    timeoutSeconds: 10
+                    failureThreshold: 10
+                  ports:
+                    - name: backend-8080
+                      containerPort: 8080
+                  volumeMounts:
+                    - name: app-logs
+                      mountPath: /app/logs
+                    - name: data-exports
+                      mountPath: /data/exports
+            volumes:
+                - name: app-logs
+                  persistentVolumeClaim:
+                    claimName: backend-backend-logs
+                - name: data-exports
+                  persistentVolumeClaim:
+                    claimName: backend-backend-exports

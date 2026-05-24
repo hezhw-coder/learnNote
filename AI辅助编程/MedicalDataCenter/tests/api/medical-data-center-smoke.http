@@ -1,0 +1,116 @@
+@baseUrl = http://localhost:8080
+@gatewayUrl = http://localhost
+@username = admin
+@password = ChangeMe123!
+@clientId = replace_client_id
+@clientSecret = replace_client_secret
+@adminToken = replace_admin_token
+@openApiToken = replace_open_api_token
+@basicAuthToken = replace_base64_client_id_colon_client_secret
+@requestId = smoke-test-request-001
+
+### 健康检查
+GET {{baseUrl}}/actuator/health
+X-Request-Id: {{requestId}}
+
+### 登录获取管理端令牌
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+X-Request-Id: {{requestId}}
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+### 查询数据源列表
+# 将上一步响应中的 accessToken 填入变量后再执行
+GET {{baseUrl}}/api/data-sources?pageNum=1&pageSize=10
+Authorization: Bearer {{adminToken}}
+X-Request-Id: {{requestId}}
+
+### 测试 TiDB 连接
+POST {{baseUrl}}/api/data-sources/test
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+X-Request-Id: {{requestId}}
+
+{
+  "name": "TiDB-MVP",
+  "code": "tidb_mvp",
+  "type": "TIDB",
+  "host": "localhost",
+  "port": 4000,
+  "databaseName": "medical_data_center",
+  "username": "root",
+  "password": ""
+}
+
+### 创建增量抽取任务
+POST {{baseUrl}}/api/etl/jobs
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+X-Request-Id: {{requestId}}
+
+{
+  "name": "patient_increment_job",
+  "sourceId": 1,
+  "sourceTable": "patient_info",
+  "extractMode": "INCREMENTAL",
+  "incrementField": "update_time",
+  "odsTable": "ods_his_patient_info",
+  "cdmEntity": "PATIENT",
+  "cron": "0 */30 * * * ?",
+  "fieldMappings": [
+    {
+      "sourceField": "patient_name",
+      "targetField": "patient_name",
+      "transformers": []
+    }
+  ]
+}
+
+### 查询数据集列表
+GET {{baseUrl}}/api/datasets?pageNum=1&pageSize=10
+Authorization: Bearer {{adminToken}}
+X-Request-Id: {{requestId}}
+
+### 创建报表模板
+POST {{baseUrl}}/api/reports/templates
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+X-Request-Id: {{requestId}}
+
+{
+  "name": "门诊趋势",
+  "datasetId": 1,
+  "layoutSchema": {
+    "version": "1.0.0",
+    "components": [
+      {
+        "id": "chart_1",
+        "type": "LINE",
+        "title": "近30天门诊趋势",
+        "bindings": {
+          "dimension": "visit_date",
+          "metrics": ["visit_count"]
+        }
+      }
+    ]
+  }
+}
+
+### 申请开放 API 令牌
+# 请先将 client_id:client_secret 做 Base64 编码后填入 basicAuthToken
+POST {{baseUrl}}/oauth2/token
+Authorization: Basic {{basicAuthToken}}
+Content-Type: application/x-www-form-urlencoded
+X-Request-Id: {{requestId}}
+
+grant_type=client_credentials&scope=patient.read encounter.read lab.read
+
+### 查询患者信息
+# 将上一步 access_token 填入 openApiToken 后执行
+GET {{gatewayUrl}}/open-api/v1/patients?pageNum=1&pageSize=10
+Authorization: Bearer {{openApiToken}}
+X-Request-Id: {{requestId}}
