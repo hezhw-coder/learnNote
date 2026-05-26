@@ -16,6 +16,7 @@ declare module 'vue-router' {
     title: string;
     requiresAuth?: boolean;
     permission?: string;
+    permissionsAny?: string[];
   }
 }
 
@@ -79,7 +80,11 @@ const router = createRouter({
           path: 'system',
           name: 'system',
           component: SystemPage,
-          meta: { title: '系统管理', requiresAuth: true, permission: 'SYSTEM_ROLE_VIEW' },
+          meta: {
+            title: '系统管理',
+            requiresAuth: true,
+            permissionsAny: ['SYSTEM_ROLE_VIEW', 'SYSTEM_USER_VIEW', 'SYSTEM_ROLE_MANAGE', 'SYSTEM_PARAM_MANAGE'],
+          },
         },
       ],
     },
@@ -94,9 +99,9 @@ router.beforeEach((to) => {
     return { path: '/login', query: { redirect: to.fullPath } };
   }
 
-  if (to.meta.permission) {
+  if (to.meta.permission || to.meta.permissionsAny) {
     const permissionStore = usePermissionStore();
-    if (!permissionStore.hasPermission(to.meta.permission)) {
+    if (!permissionStore.hasPermission(to.meta.permission, to.meta.permissionsAny)) {
       return { path: '/dashboard' };
     }
   }

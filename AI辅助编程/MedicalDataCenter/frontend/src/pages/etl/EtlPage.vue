@@ -62,7 +62,7 @@ onMounted(loadData);
 
     <el-card class="panel-card" shadow="never">
       <el-alert
-        title="当前为骨架版任务编排，后续联调后接入真实字段探测、增量游标、重试策略与调度开关。"
+        title="当前已支持患者、就诊、检验、检验结果、用药医嘱五个标准主题的最小闭环，并已切换为配置驱动的主题字段绑定方式。"
         type="info"
         :closable="false"
       />
@@ -72,7 +72,7 @@ onMounted(loadData);
       <el-table :data="jobs" v-loading="loading">
         <el-table-column prop="name" label="任务名称" min-width="180" />
         <el-table-column prop="sourceName" label="来源数据源" min-width="160" />
-        <el-table-column prop="datasetName" label="目标数据集" min-width="160" />
+        <el-table-column prop="datasetName" label="目标主题" min-width="160" />
         <el-table-column prop="runMode" label="抽取策略" width="110" />
         <el-table-column label="状态" width="110">
           <template #default="{ row }">

@@ -1,0 +1,46 @@
+spring:
+  config:
+    import: optional:configtree:/run/secrets/
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${MDC_DB_URL:}
+    username: ${MDC_DB_USERNAME:}
+    password: ${MDC_DB_PASSWORD:}
+  data:
+    redis:
+      host: ${MDC_REDIS_HOST:}
+      port: ${MDC_REDIS_PORT:6379}
+      password: ${MDC_REDIS_PASSWORD:}
+
+server:
+  forward-headers-strategy: framework
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+app:
+  security:
+    issuer: ${MDC_OAUTH2_ISSUER:}
+    jwt-secret: ${MDC_JWT_SECRET:}
+    jwt-active-kid: ${MDC_JWT_ACTIVE_KID:mdc-k2}
+    jwt-previous-secrets: ${MDC_JWT_PREVIOUS_SECRETS:}
+    allowed-origin-patterns: ${MDC_ALLOWED_ORIGIN_PATTERNS:}
+    request-id-header: X-Request-Id
+  crypto:
+    aes-key: ${MDC_AES_KEY:}
+    active-key-version: ${MDC_AES_ACTIVE_KEY_VERSION:v2}
+    previous-keys: ${MDC_AES_PREVIOUS_KEYS:}
+  export:
+    dir: ${MDC_EXPORT_BASE_PATH:/data/exports}

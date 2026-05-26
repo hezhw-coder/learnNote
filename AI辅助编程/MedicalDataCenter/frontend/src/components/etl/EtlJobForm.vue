@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { reactive, watch } from 'vue';
+import { computed, reactive, watch } from 'vue';
+import {
+  ETL_DATASET_PRESETS,
+  createEtlJobFormDefaults,
+  getEtlDatasetPreset,
+} from '@/constants/etl-presets';
 import type { DataSourceItem } from '@/types/data-source';
-import type { EtlJobFormModel } from '@/types/etl';
+import type { EtlDatasetConfigFieldKey, EtlJobFormModel } from '@/types/etl';
 
 const props = defineProps<{
   modelValue: boolean;
@@ -14,54 +19,61 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean];
   submit: [value: EtlJobFormModel];
 }>();
+const form = reactive<EtlJobFormModel>(createEtlJobFormDefaults());
+const activeDatasetPreset = computed(() => getEtlDatasetPreset(form.datasetCode));
+const activeFieldDefinitions = computed(() => activeDatasetPreset.value.fieldDefinitions);
 
-const form = reactive<EtlJobFormModel>({
-  name: '',
-  sourceId: '',
-  sourceTable: 'patient_source',
-  datasetName: '',
-  runMode: 'incremental',
-  extractSql: '',
-  incrementField: 'update_time',
-  idField: 'patient_id',
-  nameField: 'name',
-  genderField: 'gender',
-  birthDateField: 'birth_date',
-  cleanRules: 'trim;mask_id_card;gender_mapping',
-  mappings: [
-    { sourceField: 'patient_id', targetField: 'patientCode', transformRule: 'trim' },
-    { sourceField: 'name', targetField: 'patientName', transformRule: 'mask_name' },
-  ],
-  schedule: '0 */10 * * * ?',
-  enabled: true,
-});
+function applyDatasetPreset(datasetCode: string) {
+  const preset = getEtlDatasetPreset(datasetCode);
+  Object.assign(form, {
+    sourceTable: preset.sourceTable,
+    datasetCode: preset.datasetCode,
+    fieldBindings: Object.fromEntries(preset.fieldDefinitions.map((field) => [field.targetField, preset[field.key] ?? ''])),
+    idField: preset.idField,
+    nameField: preset.nameField,
+    genderField: preset.genderField,
+    birthDateField: preset.birthDateField,
+    extraCodeField: preset.extraCodeField,
+    valueField: preset.valueField,
+    unitField: preset.unitField,
+    eventTimeField: preset.eventTimeField,
+    cleanRules: preset.cleanRules,
+    mappings: preset.mappings.map((item) => ({ ...item })),
+  });
+}
+
+function createDefaultFormState() {
+  return {
+    ...createEtlJobFormDefaults(),
+    sourceId: props.sourceOptions[0]?.id ?? '',
+  };
+}
+
+function fieldValue(key: EtlDatasetConfigFieldKey) {
+  const fieldDefinition = activeFieldDefinitions.value.find((item) => item.key === key);
+  if (!fieldDefinition) {
+    return form[key] ?? '';
+  }
+  return form.fieldBindings[fieldDefinition.targetField] ?? form[key] ?? '';
+}
+
+function setFieldValue(key: EtlDatasetConfigFieldKey, targetField: string, value: string) {
+  form[key] = value;
+  form.fieldBindings[targetField] = value;
+}
 
 watch(
   () => props.initialValue,
   (value) => {
-    Object.assign(form, {
-      name: '',
-      sourceId: props.sourceOptions[0]?.id ?? '',
-      sourceTable: 'patient_source',
-      datasetName: '',
-      runMode: 'incremental',
-      extractSql: '',
-      incrementField: 'update_time',
-      idField: 'patient_id',
-      nameField: 'name',
-      genderField: 'gender',
-      birthDateField: 'birth_date',
-      cleanRules: 'trim;mask_id_card;gender_mapping',
-      mappings: [
-        { sourceField: 'patient_id', targetField: 'patientCode', transformRule: 'trim' },
-        { sourceField: 'name', targetField: 'patientName', transformRule: 'mask_name' },
-      ],
-      schedule: '0 */10 * * * ?',
-      enabled: true,
-    });
+    Object.assign(form, createDefaultFormState());
 
     if (value) {
       Object.assign(form, value);
+      const preset = getEtlDatasetPreset(form.datasetCode);
+      form.fieldBindings = {
+        ...Object.fromEntries(preset.fieldDefinitions.map((field) => [field.targetField, form[field.key] ?? ''])),
+        ...(value.fieldBindings ?? {}),
+      };
     }
   },
   { immediate: true },
@@ -79,9 +91,14 @@ function removeMapping(index: number) {
   form.mappings.splice(index, 1);
 }
 
+function handleDatasetChange(value: string) {
+  applyDatasetPreset(value);
+}
+
 function handleSubmit() {
   emit('submit', {
     ...form,
+    fieldBindings: { ...form.fieldBindings },
     mappings: form.mappings.map((item) => ({ ...item })),
   });
 }
@@ -103,11 +120,18 @@ function handleSubmit() {
           <el-option v-for="source in sourceOptions" :key="source.id" :label="source.name" :value="source.id" />
         </el-select>
       </el-form-item>
-      <el-form-item label="目标数据集">
-        <el-input v-model="form.datasetName" placeholder="如：CDM_PATIENT" />
+      <el-form-item label="目标主题">
+        <el-select v-model="form.datasetCode" placeholder="请选择标准主题" @change="handleDatasetChange">
+          <el-option
+            v-for="preset in ETL_DATASET_PRESETS"
+            :key="preset.code"
+            :label="`${preset.label} (${preset.code})`"
+            :value="preset.code"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="源表/集合">
-        <el-input v-model="form.sourceTable" placeholder="如：patient_source" />
+        <el-input v-model="form.sourceTable" placeholder="如：patient_source / lab_result_source" />
       </el-form-item>
       <el-form-item label="抽取策略">
         <el-radio-group v-model="form.runMode">
@@ -121,17 +145,16 @@ function handleSubmit() {
       <el-form-item label="增量字段" v-if="form.runMode === 'incremental'">
         <el-input v-model="form.incrementField" placeholder="如：update_time / id" />
       </el-form-item>
-      <el-form-item label="主键字段">
-        <el-input v-model="form.idField" placeholder="如：patient_id" />
-      </el-form-item>
-      <el-form-item label="姓名字段">
-        <el-input v-model="form.nameField" placeholder="如：name" />
-      </el-form-item>
-      <el-form-item label="性别字段">
-        <el-input v-model="form.genderField" placeholder="如：gender" />
-      </el-form-item>
-      <el-form-item label="生日字段">
-        <el-input v-model="form.birthDateField" placeholder="如：birth_date" />
+      <el-form-item
+        v-for="field in activeFieldDefinitions"
+        :key="field.key"
+        :label="field.label"
+      >
+        <el-input
+          :model-value="fieldValue(field.key)"
+          :placeholder="field.placeholder"
+          @update:model-value="setFieldValue(field.key, field.targetField, $event)"
+        />
       </el-form-item>
       <el-form-item label="清洗规则">
         <el-input v-model="form.cleanRules" type="textarea" :rows="3" />

@@ -51,14 +51,20 @@ onMounted(loadData);
             <h3>数据集目录</h3>
           </div>
         </template>
-        <el-menu :default-active="activeId" @select="handleSelect">
-          <el-menu-item v-for="item in datasets" :key="item.id" :index="item.id">
-            <div class="dataset-menu">
-              <strong>{{ item.name }}</strong>
-              <span>{{ item.category }}</span>
-            </div>
-          </el-menu-item>
-        </el-menu>
+        <el-scrollbar max-height="520px">
+          <el-menu class="dataset-directory-menu" :default-active="activeId" @select="handleSelect">
+            <el-menu-item v-for="item in datasets" :key="item.id" :index="item.id">
+              <div class="dataset-menu">
+                <div class="dataset-menu__head">
+                  <strong :title="item.name">{{ item.name }}</strong>
+                  <el-tag effect="plain" round size="small">{{ item.category }}</el-tag>
+                </div>
+                <span class="dataset-menu__desc" :title="item.description">{{ item.description }}</span>
+                <span class="dataset-menu__meta">{{ item.fields.length }} 个字段</span>
+              </div>
+            </el-menu-item>
+          </el-menu>
+        </el-scrollbar>
       </el-card>
 
       <div class="page-shell">
@@ -121,12 +127,87 @@ onMounted(loadData);
 .dataset-menu {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
 }
 
-.dataset-menu span {
+.dataset-menu__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dataset-menu__head strong {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #0f172a;
+}
+
+.dataset-menu__desc,
+.dataset-menu__meta {
   font-size: 12px;
+  line-height: 1.45;
   color: #64748b;
+}
+
+.dataset-menu__desc {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.dataset-menu__meta {
+  color: #94a3b8;
+}
+
+:deep(.dataset-directory-menu) {
+  border-right: none;
+}
+
+:deep(.dataset-directory-menu .el-menu-item) {
+  display: flex;
+  align-items: stretch;
+  height: auto;
+  min-height: 96px;
+  margin-bottom: 12px;
+  padding: 14px 16px;
+  line-height: normal;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #f8fafc;
+  transition: all 0.2s ease;
+}
+
+:deep(.dataset-directory-menu .el-menu-item:hover) {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+:deep(.dataset-directory-menu .el-menu-item.is-active) {
+  border-color: #93c5fd;
+  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.12);
+}
+
+:deep(.dataset-directory-menu .el-menu-item.is-active .dataset-menu__head strong) {
+  color: #1d4ed8;
+}
+
+:deep(.dataset-directory-menu .el-menu-item.is-active .dataset-menu__desc) {
+  color: #334155;
+}
+
+:deep(.dataset-directory-menu .el-menu-item.is-active .dataset-menu__meta) {
+  color: #475569;
 }
 
 @media (max-width: 1200px) {

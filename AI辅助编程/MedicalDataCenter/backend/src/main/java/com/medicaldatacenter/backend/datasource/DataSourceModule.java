@@ -96,8 +96,10 @@ public final class DataSourceModule {
                     request.name(), request.type().toUpperCase(Locale.ROOT), request.jdbcUrl(), request.username(),
                     request.databaseName(), "ENABLED");
             Long id = jdbcTemplate.queryForObject("select max(id) from ds_source", Long.class);
-            jdbcTemplate.update("merge into ds_source_secret key(source_id) values (?, ?)", id,
-                    textEncryptor.encrypt(request.password()));
+            jdbcTemplate.update(
+                    "insert into ds_source_secret(source_id, encrypted_password) values (?, ?) "
+                            + "on duplicate key update encrypted_password = values(encrypted_password)",
+                    id, textEncryptor.encrypt(request.password()));
             userAccountService.audit(userAccountService.currentActor(), "DS_CREATE", "ds_source", String.valueOf(id),
                     request.name());
             return getById(id);
@@ -111,8 +113,10 @@ public final class DataSourceModule {
                     request.name(), request.type().toUpperCase(Locale.ROOT), request.jdbcUrl(), request.username(),
                     request.databaseName(), id);
             if (request.password() != null && !request.password().isBlank()) {
-                jdbcTemplate.update("merge into ds_source_secret key(source_id) values (?, ?)", id,
-                        textEncryptor.encrypt(request.password()));
+                jdbcTemplate.update(
+                        "insert into ds_source_secret(source_id, encrypted_password) values (?, ?) "
+                                + "on duplicate key update encrypted_password = values(encrypted_password)",
+                        id, textEncryptor.encrypt(request.password()));
             }
             userAccountService.audit(userAccountService.currentActor(), "DS_UPDATE", "ds_source", String.valueOf(id),
                     request.name());

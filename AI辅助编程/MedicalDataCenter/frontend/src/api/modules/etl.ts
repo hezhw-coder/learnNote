@@ -1,5 +1,6 @@
 import type { EtlJobFormModel } from '@/types/etl';
 import { request } from '@/api/http';
+import { getEtlDatasetPreset } from '@/constants/etl-presets';
 import { fetchDataSources } from './data-sources';
 
 interface BackendEtlJob {
@@ -7,6 +8,7 @@ interface BackendEtlJob {
   name: string;
   dataSourceId: number;
   loadMode: string;
+  targetDatasetCode: string;
   sourceTable: string;
   extractSql?: string;
   incrementField?: string;
@@ -14,6 +16,10 @@ interface BackendEtlJob {
   nameField: string;
   genderField?: string;
   birthDateField?: string;
+  extraCodeField?: string;
+  valueField?: string;
+  unitField?: string;
+  eventTimeField?: string;
   status: string;
 }
 
@@ -57,18 +63,25 @@ export async function fetchEtlJobs() {
     fetchDataSources(),
   ]);
 
-  return jobs.map((item) => ({
-    id: String(item.id),
-    name: item.name,
-    sourceId: String(item.dataSourceId),
-    sourceName: dataSources.find((source) => source.id === String(item.dataSourceId))?.name ?? `数据源-${item.dataSourceId}`,
-    datasetName: 'CDM_PATIENT',
-    runMode: item.loadMode.toLowerCase() === 'incremental' ? 'incremental' : 'full',
-    status: normalizeStatus(item.status),
-    schedule: item.loadMode.toLowerCase() === 'incremental' ? '增量抽取' : '全量抽取',
-    updateTime: '-',
-    latestRun: '-',
-  }));
+  return jobs.map((item) => {
+    const preset = getEtlDatasetPreset(item.targetDatasetCode);
+    return {
+      id: String(item.id),
+      name: item.name,
+      sourceId: String(item.dataSourceId),
+      sourceName:
+        dataSources.find((source) => source.id === String(item.dataSourceId))?.name ?? `数据源-${item.dataSourceId}`,
+      datasetName: `${preset.label} (${item.targetDatasetCode})`,
+      runMode: item.loadMode.toLowerCase() === 'incremental' ? 'incremental' : 'full',
+      status: normalizeStatus(item.status),
+      schedule:
+        item.loadMode.toLowerCase() === 'incremental'
+          ? `增量抽取 / ${preset.label}`
+          : `全量抽取 / ${preset.label}`,
+      updateTime: '-',
+      latestRun: '-',
+    };
+  });
 }
 
 export function submitEtlJob(payload: EtlJobFormModel) {
@@ -79,13 +92,19 @@ export function submitEtlJob(payload: EtlJobFormModel) {
       name: payload.name,
       dataSourceId: Number(payload.sourceId),
       loadMode: payload.runMode.toUpperCase(),
+      targetDatasetCode: payload.datasetCode,
       sourceTable: payload.sourceTable,
       extractSql: payload.extractSql || undefined,
       incrementField: payload.runMode === 'incremental' ? payload.incrementField : undefined,
+      fieldBindings: payload.fieldBindings,
       idField: payload.idField,
       nameField: payload.nameField,
       genderField: payload.genderField || undefined,
       birthDateField: payload.birthDateField || undefined,
+      extraCodeField: payload.extraCodeField || undefined,
+      valueField: payload.valueField || undefined,
+      unitField: payload.unitField || undefined,
+      eventTimeField: payload.eventTimeField || undefined,
     },
   });
 }

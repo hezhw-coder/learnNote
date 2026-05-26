@@ -15,6 +15,11 @@ export interface UserInfo {
 export interface LoginResult {
   accessToken: string;
   refreshToken: string;
+  tokenType: string;
   expiresIn: number;
+  refreshExpiresIn: number;
+  username: string;
+  displayName: string;
+  authorities: string[];
   user: UserInfo;
 }

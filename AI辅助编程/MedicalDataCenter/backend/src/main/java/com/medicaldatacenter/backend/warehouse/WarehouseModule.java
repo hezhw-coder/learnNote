@@ -45,11 +45,19 @@ public final class WarehouseModule {
         }
 
         public List<Map<String, Object>> sampleRows(String code) {
-            if (!"cdm_patient".equals(code)) {
-                return List.of();
-            }
-            return jdbcTemplate.queryForList(
-                    "select patient_code, patient_name, gender, birth_date from cdm_patient order by id limit 20");
+            return switch (code) {
+                case "cdm_patient" -> jdbcTemplate.queryForList(
+                        "select patient_code, patient_name, gender, birth_date from cdm_patient order by id limit 20");
+                case "cdm_encounter" -> jdbcTemplate.queryForList(
+                        "select patient_code, encounter_code, encounter_type, department_name, doctor_name, encounter_date from cdm_encounter order by id limit 20");
+                case "cdm_lab" -> jdbcTemplate.queryForList(
+                        "select patient_code, encounter_code, item_code, item_name, result_value, unit, result_flag, report_date from cdm_lab order by id limit 20");
+                case "cdm_lab_result" -> jdbcTemplate.queryForList(
+                        "select patient_code, item_code, item_name, result_value, result_unit, sample_time from cdm_lab_result order by id limit 20");
+                case "cdm_medication_order" -> jdbcTemplate.queryForList(
+                        "select patient_code, drug_code, drug_name, dose_value, dose_unit, order_time from cdm_medication_order order by id limit 20");
+                default -> List.of();
+            };
         }
 
         private List<DatasetField> fields(String code) {

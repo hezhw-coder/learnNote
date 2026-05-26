@@ -44,7 +44,7 @@ spec:
                     - name: MDC_JWT_SECRET
                       value: "medical-data-center-docker-jwt-secret-2026"
                     - name: MDC_OAUTH2_ISSUER
-                      value: "http://localhost:8080"
+                      value: "http://localhost:18080"
                     - name: MDC_REDIS_HOST
                       value: "redis"
                     - name: MDC_REDIS_PASSWORD

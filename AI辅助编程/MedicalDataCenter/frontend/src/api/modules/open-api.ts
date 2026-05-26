@@ -8,6 +8,13 @@ interface BackendApiClient {
   enabled: boolean;
 }
 
+interface BackendApiScope {
+  id: number;
+  code: string;
+  name: string;
+  description: string;
+}
+
 interface BackendApiLog {
   id: number;
   clientId: string;
@@ -35,6 +42,13 @@ export function fetchApiClients() {
   );
 }
 
+export function fetchApiScopes() {
+  return request<BackendApiScope[]>({
+    url: '/open-api/scopes',
+    method: 'get',
+  });
+}
+
 export function fetchApiLogs() {
   return request<BackendApiLog[]>({
     url: '/open-api/logs',
@@ -49,4 +63,17 @@ export function fetchApiLogs() {
       timestamp: item.createdAt?.replace('T', ' ').slice(0, 19) ?? '-',
     })),
   );
+}
+
+export function createApiClient(payload: {
+  name: string;
+  clientId: string;
+  clientSecret: string;
+  scopes: string;
+}) {
+  return request<BackendApiClient>({
+    url: '/open-api/clients',
+    method: 'post',
+    data: payload,
+  });
 }

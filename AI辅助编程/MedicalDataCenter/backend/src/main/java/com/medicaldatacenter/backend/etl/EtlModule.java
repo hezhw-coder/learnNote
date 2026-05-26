@@ -34,25 +34,72 @@ import jakarta.validation.constraints.NotNull;
 
 public final class EtlModule {
 
+    private static final Map<String, DatasetSpec> DATASET_SPECS = Map.of(
+            "cdm_patient", new DatasetSpec("患者主题", List.of("idField", "nameField"), Map.of(
+                    "idField", "patient_code",
+                    "nameField", "patient_name",
+                    "genderField", "gender",
+                    "birthDateField", "birth_date")),
+            "cdm_encounter", new DatasetSpec("就诊主题", List.of("idField", "nameField", "extraCodeField", "eventTimeField"), Map.of(
+                    "idField", "patient_code",
+                    "nameField", "encounter_type",
+                    "extraCodeField", "encounter_code",
+                    "valueField", "department_name",
+                    "unitField", "doctor_name",
+                    "eventTimeField", "encounter_date")),
+            "cdm_lab", new DatasetSpec("检验主题", List.of("idField", "nameField", "extraCodeField", "eventTimeField"), Map.of(
+                    "idField", "patient_code",
+                    "genderField", "encounter_code",
+                    "extraCodeField", "item_code",
+                    "nameField", "item_name",
+                    "valueField", "result_value",
+                    "unitField", "unit",
+                    "birthDateField", "result_flag",
+                    "eventTimeField", "report_date")),
+            "cdm_lab_result", new DatasetSpec("检验结果主题", List.of("idField", "nameField", "extraCodeField"), Map.of(
+                    "idField", "patient_code",
+                    "extraCodeField", "item_code",
+                    "nameField", "item_name",
+                    "valueField", "result_value",
+                    "unitField", "result_unit",
+                    "eventTimeField", "sample_time")),
+            "cdm_medication_order", new DatasetSpec("用药医嘱主题", List.of("idField", "nameField", "extraCodeField"), Map.of(
+                    "idField", "patient_code",
+                    "extraCodeField", "drug_code",
+                    "nameField", "drug_name",
+                    "valueField", "dose_value",
+                    "unitField", "dose_unit",
+                    "eventTimeField", "order_time")));
+
     private EtlModule() {
+    }
+
+    private record DatasetSpec(String label, List<String> requiredFields, Map<String, String> fieldBindingTargets) {
     }
 
     public record EtlJobRequest(
             @NotBlank String name,
             @NotNull Long dataSourceId,
             @NotBlank String loadMode,
+            @NotBlank String targetDatasetCode,
             String sourceTable,
             String extractSql,
             String incrementField,
-            @NotBlank String idField,
-            @NotBlank String nameField,
+            Map<String, String> fieldBindings,
+            String idField,
+            String nameField,
             String genderField,
-            String birthDateField) {
+            String birthDateField,
+            String extraCodeField,
+            String valueField,
+            String unitField,
+            String eventTimeField) {
     }
 
     public record EtlJobView(Long id, String name, Long dataSourceId, String loadMode, String sourceTable,
-            String extractSql, String incrementField, String idField, String nameField, String genderField,
-            String birthDateField, String status) {
+            String extractSql, String incrementField, String targetDatasetCode, String idField, String nameField,
+            String genderField, String birthDateField, String extraCodeField, String valueField, String unitField,
+            String eventTimeField, Map<String, String> fieldBindings, String status) {
     }
 
     public record EtlRunView(Long id, Long jobId, String status, int extractedCount, String message,
@@ -77,7 +124,7 @@ public final class EtlModule {
 
         public List<EtlJobView> listJobs() {
             return jdbcTemplate.query(
-                    "select id, name, data_source_id, load_mode, source_table, extract_sql, increment_field, id_field, name_field, gender_field, birth_date_field, status from etl_job order by id",
+                    "select id, name, data_source_id, load_mode, source_table, extract_sql, increment_field, target_dataset_code, id_field, name_field, gender_field, birth_date_field, extra_code_field, value_field, unit_field, event_time_field, field_bindings_json, status from etl_job order by id",
                     (rs, rowNum) -> new EtlJobView(
                             rs.getLong("id"),
                             rs.getString("name"),
@@ -86,30 +133,106 @@ public final class EtlModule {
                             rs.getString("source_table"),
                             rs.getString("extract_sql"),
                             rs.getString("increment_field"),
+                            rs.getString("target_dataset_code"),
                             rs.getString("id_field"),
                             rs.getString("name_field"),
                             rs.getString("gender_field"),
                             rs.getString("birth_date_field"),
+                            rs.getString("extra_code_field"),
+                            rs.getString("value_field"),
+                            rs.getString("unit_field"),
+                            rs.getString("event_time_field"),
+                            parseFieldBindings(
+                                    rs.getString("field_bindings_json"),
+                                    rs.getString("target_dataset_code"),
+                                    rs.getString("id_field"),
+                                    rs.getString("name_field"),
+                                    rs.getString("gender_field"),
+                                    rs.getString("birth_date_field"),
+                                    rs.getString("extra_code_field"),
+                                    rs.getString("value_field"),
+                                    rs.getString("unit_field"),
+                                    rs.getString("event_time_field")),
                             rs.getString("status")));
         }
 
         public EtlJobView createJob(EtlJobRequest request) {
+            validateRequest(request);
             dataSourceService.getById(request.dataSourceId());
+            String datasetCode = Objects.toString(request.targetDatasetCode(), "").toLowerCase();
             jdbcTemplate.update(
-                    "insert into etl_job(name, data_source_id, load_mode, source_table, extract_sql, increment_field, id_field, name_field, gender_field, birth_date_field, status) "
-                            + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "insert into etl_job(name, data_source_id, load_mode, source_table, extract_sql, increment_field, target_dataset_code, id_field, name_field, gender_field, birth_date_field, extra_code_field, value_field, unit_field, event_time_field, field_bindings_json, status) "
+                            + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     request.name(), request.dataSourceId(), request.loadMode(), request.sourceTable(), request.extractSql(),
-                    request.incrementField(), request.idField(), request.nameField(), request.genderField(),
-                    request.birthDateField(), "READY");
+                    request.incrementField(), request.targetDatasetCode(),
+                    resolveRequestField(request, datasetCode, "idField"),
+                    resolveRequestField(request, datasetCode, "nameField"),
+                    resolveRequestField(request, datasetCode, "genderField"),
+                    resolveRequestField(request, datasetCode, "birthDateField"),
+                    resolveRequestField(request, datasetCode, "extraCodeField"),
+                    resolveRequestField(request, datasetCode, "valueField"),
+                    resolveRequestField(request, datasetCode, "unitField"),
+                    resolveRequestField(request, datasetCode, "eventTimeField"),
+                    serializeFieldBindings(datasetCode, request),
+                    "READY");
             Long id = jdbcTemplate.queryForObject("select max(id) from etl_job", Long.class);
             userAccountService.audit(userAccountService.currentActor(), "ETL_JOB_CREATE", "etl_job", String.valueOf(id),
-                    request.name());
+                    request.name() + " -> " + request.targetDatasetCode());
             return getJob(id);
+        }
+
+        private void validateRequest(EtlJobRequest request) {
+            String datasetCode = Objects.toString(request.targetDatasetCode(), "").toLowerCase();
+            DatasetSpec datasetSpec = DATASET_SPECS.get(datasetCode);
+            if (datasetSpec == null) {
+                throw new CommonSupport.BusinessException(HttpStatus.BAD_REQUEST,
+                        "unsupported dataset: " + request.targetDatasetCode());
+            }
+            if (isBlank(request.sourceTable())) {
+                throw new CommonSupport.BusinessException(HttpStatus.BAD_REQUEST, "sourceTable is required");
+            }
+            if (!"FULL".equalsIgnoreCase(request.loadMode()) && !"INCREMENTAL".equalsIgnoreCase(request.loadMode())) {
+                throw new CommonSupport.BusinessException(HttpStatus.BAD_REQUEST, "loadMode must be FULL or INCREMENTAL");
+            }
+            List<String> missingFields = datasetSpec.requiredFields().stream()
+                    .filter(field -> isBlank(resolveRequestField(request, datasetCode, field)))
+                    .toList();
+            if (!missingFields.isEmpty()) {
+                throw new CommonSupport.BusinessException(HttpStatus.BAD_REQUEST,
+                        datasetSpec.label() + "缺少必填字段: " + String.join(", ", missingFields));
+            }
+        }
+
+        private String resolveRequestField(EtlJobRequest request, String datasetCode, String fieldName) {
+            String legacyValue = switch (fieldName) {
+                case "idField" -> request.idField();
+                case "nameField" -> request.nameField();
+                case "genderField" -> request.genderField();
+                case "birthDateField" -> request.birthDateField();
+                case "extraCodeField" -> request.extraCodeField();
+                case "valueField" -> request.valueField();
+                case "unitField" -> request.unitField();
+                case "eventTimeField" -> request.eventTimeField();
+                default -> null;
+            };
+            if (!isBlank(legacyValue)) {
+                return legacyValue;
+            }
+            DatasetSpec datasetSpec = DATASET_SPECS.get(datasetCode);
+            if (datasetSpec == null || request.fieldBindings() == null) {
+                return legacyValue;
+            }
+            String semanticField = datasetSpec.fieldBindingTargets().get(fieldName);
+            if (semanticField == null) {
+                return legacyValue;
+            }
+            String semanticValue = request.fieldBindings().get(semanticField);
+            return isBlank(semanticValue) ? legacyValue : semanticValue;
         }
 
         public EtlJobView getJob(Long id) {
             List<EtlJobView> items = jdbcTemplate.query(
-                    "select id, name, data_source_id, load_mode, source_table, extract_sql, increment_field, id_field, name_field, gender_field, birth_date_field, status from etl_job where id = ?",
+                    "select id, name, data_source_id, load_mode, source_table, extract_sql, increment_field, target_dataset_code, id_field, name_field, gender_field, birth_date_field, extra_code_field, value_field, unit_field, event_time_field, field_bindings_json, status from etl_job where id = ?",
                     (rs, rowNum) -> new EtlJobView(
                             rs.getLong("id"),
                             rs.getString("name"),
@@ -118,16 +241,91 @@ public final class EtlModule {
                             rs.getString("source_table"),
                             rs.getString("extract_sql"),
                             rs.getString("increment_field"),
+                            rs.getString("target_dataset_code"),
                             rs.getString("id_field"),
                             rs.getString("name_field"),
                             rs.getString("gender_field"),
                             rs.getString("birth_date_field"),
+                            rs.getString("extra_code_field"),
+                            rs.getString("value_field"),
+                            rs.getString("unit_field"),
+                            rs.getString("event_time_field"),
+                            parseFieldBindings(
+                                    rs.getString("field_bindings_json"),
+                                    rs.getString("target_dataset_code"),
+                                    rs.getString("id_field"),
+                                    rs.getString("name_field"),
+                                    rs.getString("gender_field"),
+                                    rs.getString("birth_date_field"),
+                                    rs.getString("extra_code_field"),
+                                    rs.getString("value_field"),
+                                    rs.getString("unit_field"),
+                                    rs.getString("event_time_field")),
                             rs.getString("status")),
                     id);
             if (items.isEmpty()) {
                 throw new CommonSupport.BusinessException(HttpStatus.NOT_FOUND, "etl job not found");
             }
             return items.get(0);
+        }
+
+        private String serializeFieldBindings(String datasetCode, EtlJobRequest request) {
+            try {
+                return objectMapper.writeValueAsString(buildSemanticBindings(datasetCode, request));
+            } catch (Exception exception) {
+                throw new CommonSupport.BusinessException(HttpStatus.BAD_REQUEST, "invalid field bindings payload");
+            }
+        }
+
+        private Map<String, String> buildSemanticBindings(String datasetCode, EtlJobRequest request) {
+            DatasetSpec datasetSpec = DATASET_SPECS.get(datasetCode);
+            Map<String, String> result = new LinkedHashMap<>();
+            if (datasetSpec == null) {
+                return result;
+            }
+            for (Map.Entry<String, String> entry : datasetSpec.fieldBindingTargets().entrySet()) {
+                String value = resolveRequestField(request, datasetCode, entry.getKey());
+                if (!isBlank(value)) {
+                    result.put(entry.getValue(), value);
+                }
+            }
+            return result;
+        }
+
+        private Map<String, String> parseFieldBindings(String json, String datasetCode,
+                String idField, String nameField, String genderField, String birthDateField,
+                String extraCodeField, String valueField, String unitField, String eventTimeField) {
+            if (!isBlank(json)) {
+                try {
+                    @SuppressWarnings("unchecked")
+                    Map<String, String> parsed = objectMapper.readValue(json, LinkedHashMap.class);
+                    return parsed;
+                } catch (Exception ignored) {
+                    // Fall back to synthesizing from legacy columns.
+                }
+            }
+            DatasetSpec datasetSpec = DATASET_SPECS.get(Objects.toString(datasetCode, "").toLowerCase());
+            if (datasetSpec == null) {
+                return Map.of();
+            }
+            Map<String, String> result = new LinkedHashMap<>();
+            for (Map.Entry<String, String> entry : datasetSpec.fieldBindingTargets().entrySet()) {
+                String value = switch (entry.getKey()) {
+                    case "idField" -> idField;
+                    case "nameField" -> nameField;
+                    case "genderField" -> genderField;
+                    case "birthDateField" -> birthDateField;
+                    case "extraCodeField" -> extraCodeField;
+                    case "valueField" -> valueField;
+                    case "unitField" -> unitField;
+                    case "eventTimeField" -> eventTimeField;
+                    default -> null;
+                };
+                if (!isBlank(value)) {
+                    result.put(entry.getValue(), value);
+                }
+            }
+            return result;
         }
 
         public EtlRunView getRun(Long runId) {
@@ -170,7 +368,7 @@ public final class EtlModule {
                     jdbcTemplate.update(
                             "insert into ods_record(job_id, batch_run_id, source_table, record_json) values (?, ?, ?, ?)",
                             job.id(), runId, job.sourceTable(), objectMapper.writeValueAsString(row));
-                    upsertPatient(job, row);
+                    upsertStandardizedRecord(job, row);
                 }
                 updateCheckpoint(job, rows);
                 jdbcTemplate.update(
@@ -236,15 +434,110 @@ public final class EtlModule {
             return lower.contains(" where ") ? baseSql + " and " + append : baseSql + " where " + append;
         }
 
+        private void upsertStandardizedRecord(EtlJobView job, Map<String, Object> row) {
+            switch (Objects.toString(job.targetDatasetCode(), "").toLowerCase()) {
+                case "cdm_patient" -> upsertPatient(job, row);
+                case "cdm_encounter" -> upsertEncounter(job, row);
+                case "cdm_lab" -> upsertLab(job, row);
+                case "cdm_lab_result" -> upsertLabResult(job, row);
+                case "cdm_medication_order" -> upsertMedicationOrder(job, row);
+                default -> throw new CommonSupport.BusinessException(HttpStatus.BAD_REQUEST,
+                        "unsupported dataset: " + job.targetDatasetCode());
+            }
+        }
+
         private void upsertPatient(EtlJobView job, Map<String, Object> row) {
-            String patientCode = Objects.toString(row.get(job.idField()), "");
-            String patientName = Objects.toString(row.get(job.nameField()), "");
-            String gender = job.genderField() == null ? null : Objects.toString(row.get(job.genderField()), null);
-            String birthDate = job.birthDateField() == null ? null
-                    : Objects.toString(row.get(job.birthDateField()), null);
+            String patientCode = requiredField(row, job.idField(), "患者主题缺少主标识字段值");
+            String patientName = requiredField(row, job.nameField(), "患者主题缺少名称字段值");
+            String gender = optionalField(row, job.genderField());
+            String birthDate = optionalField(row, job.birthDateField());
             jdbcTemplate.update(
-                    "merge into cdm_patient key(source_job_id, patient_code) values (?, ?, ?, ?, ?)",
+                    "insert into cdm_patient(source_job_id, patient_code, patient_name, gender, birth_date) "
+                            + "values (?, ?, ?, ?, ?) "
+                            + "on duplicate key update patient_name = values(patient_name), "
+                            + "gender = values(gender), birth_date = values(birth_date)",
                     job.id(), patientCode, patientName, gender, birthDate);
+        }
+
+        private void upsertEncounter(EtlJobView job, Map<String, Object> row) {
+            String patientCode = requiredField(row, job.idField(), "就诊主题缺少患者标识");
+            String encounterType = requiredField(row, job.nameField(), "就诊主题缺少就诊类型");
+            String encounterCode = requiredField(row, job.extraCodeField(), "就诊主题缺少就诊编码");
+            String departmentName = optionalField(row, job.valueField());
+            String doctorName = optionalField(row, job.unitField());
+            String encounterDate = requiredField(row, job.eventTimeField(), "就诊主题缺少就诊日期");
+            jdbcTemplate.update(
+                    "insert into cdm_encounter(patient_code, encounter_code, encounter_type, department_name, doctor_name, encounter_date) "
+                            + "values (?, ?, ?, ?, ?, ?) "
+                            + "on duplicate key update patient_code = values(patient_code), "
+                            + "encounter_type = values(encounter_type), department_name = values(department_name), "
+                            + "doctor_name = values(doctor_name), encounter_date = values(encounter_date)",
+                    patientCode, encounterCode, encounterType, departmentName, doctorName, encounterDate);
+        }
+
+        private void upsertLabResult(EtlJobView job, Map<String, Object> row) {
+            String patientCode = requiredField(row, job.idField(), "检验结果主题缺少患者标识");
+            String itemCode = requiredField(row, job.extraCodeField(), "检验结果主题缺少项目编码");
+            String itemName = requiredField(row, job.nameField(), "检验结果主题缺少项目名称");
+            String resultValue = optionalField(row, job.valueField());
+            String resultUnit = optionalField(row, job.unitField());
+            String sampleTime = optionalField(row, job.eventTimeField());
+            jdbcTemplate.update(
+                    "insert into cdm_lab_result(source_job_id, patient_code, item_code, item_name, result_value, result_unit, sample_time) "
+                            + "values (?, ?, ?, ?, ?, ?, ?) "
+                            + "on duplicate key update item_name = values(item_name), "
+                            + "result_value = values(result_value), result_unit = values(result_unit)",
+                    job.id(), patientCode, itemCode, itemName, resultValue, resultUnit, sampleTime);
+        }
+
+        private void upsertLab(EtlJobView job, Map<String, Object> row) {
+            String patientCode = requiredField(row, job.idField(), "检验主题缺少患者标识");
+            String encounterCode = optionalField(row, job.genderField());
+            String itemCode = requiredField(row, job.extraCodeField(), "检验主题缺少项目编码");
+            String itemName = requiredField(row, job.nameField(), "检验主题缺少项目名称");
+            String resultValue = optionalField(row, job.valueField());
+            String unit = optionalField(row, job.unitField());
+            String resultFlag = optionalField(row, job.birthDateField());
+            String reportDate = requiredField(row, job.eventTimeField(), "检验主题缺少报告日期");
+            jdbcTemplate.update(
+                    "insert into cdm_lab(patient_code, encounter_code, item_code, item_name, result_value, unit, result_flag, report_date) "
+                            + "values (?, ?, ?, ?, ?, ?, ?, ?)",
+                    patientCode, encounterCode, itemCode, itemName, resultValue, unit, resultFlag, reportDate);
+        }
+
+        private void upsertMedicationOrder(EtlJobView job, Map<String, Object> row) {
+            String patientCode = requiredField(row, job.idField(), "用药主题缺少患者标识");
+            String drugCode = requiredField(row, job.extraCodeField(), "用药主题缺少药品编码");
+            String drugName = requiredField(row, job.nameField(), "用药主题缺少药品名称");
+            String doseValue = optionalField(row, job.valueField());
+            String doseUnit = optionalField(row, job.unitField());
+            String orderTime = optionalField(row, job.eventTimeField());
+            jdbcTemplate.update(
+                    "insert into cdm_medication_order(source_job_id, patient_code, drug_code, drug_name, dose_value, dose_unit, order_time) "
+                            + "values (?, ?, ?, ?, ?, ?, ?) "
+                            + "on duplicate key update drug_name = values(drug_name), "
+                            + "dose_value = values(dose_value), dose_unit = values(dose_unit)",
+                    job.id(), patientCode, drugCode, drugName, doseValue, doseUnit, orderTime);
+        }
+
+        private String optionalField(Map<String, Object> row, String fieldName) {
+            if (isBlank(fieldName)) {
+                return null;
+            }
+            String value = Objects.toString(row.get(fieldName), null);
+            return value == null || value.isBlank() ? null : value;
+        }
+
+        private String requiredField(Map<String, Object> row, String fieldName, String message) {
+            String value = optionalField(row, fieldName);
+            if (isBlank(value)) {
+                throw new CommonSupport.BusinessException(HttpStatus.BAD_REQUEST, message);
+            }
+            return value;
+        }
+
+        private boolean isBlank(String value) {
+            return value == null || value.isBlank();
         }
 
         private void updateCheckpoint(EtlJobView job, List<Map<String, Object>> rows) {
@@ -257,7 +550,10 @@ public final class EtlModule {
                     .filter(item -> !item.isBlank())
                     .max(String::compareTo)
                     .orElse("");
-            jdbcTemplate.update("merge into etl_increment_checkpoint key(job_id) values (?, ?, current_timestamp)",
+            jdbcTemplate.update(
+                    "insert into etl_increment_checkpoint(job_id, checkpoint_value, updated_at) values (?, ?, current_timestamp) "
+                            + "on duplicate key update checkpoint_value = values(checkpoint_value), "
+                            + "updated_at = values(updated_at)",
                     job.id(), value);
         }
     }

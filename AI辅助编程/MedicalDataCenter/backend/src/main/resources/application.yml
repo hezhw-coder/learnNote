@@ -28,7 +28,11 @@ app:
     issuer: medical-data-center
     jwt-secret: change-this-secret-change-this-secret-change-this-secret
     platform-token-minutes: 120
+    refresh-token-minutes: 10080
     open-api-token-minutes: 60
+    password-min-length: 8
+    max-failed-attempts: 5
+    lock-minutes: 15
     allowed-origin-patterns: http://localhost:5173,http://127.0.0.1:5173
   crypto:
     aes-key: 0123456789abcdef0123456789abcdef

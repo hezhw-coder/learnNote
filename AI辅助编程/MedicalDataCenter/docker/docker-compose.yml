@@ -91,7 +91,7 @@ services:
       MDC_REDIS_PASSWORD: ${REDIS_PASSWORD:-mdcRedis@123}
       MDC_EXPORT_BASE_PATH: /data/exports
       MDC_JWT_SECRET: ${MDC_JWT_SECRET:-medical-data-center-docker-jwt-secret-2026}
-      MDC_OAUTH2_ISSUER: ${MDC_OAUTH2_ISSUER:-http://localhost:8080}
+      MDC_OAUTH2_ISSUER: ${MDC_OAUTH2_ISSUER:-http://localhost:18080}
     ports:
       - "18080:8080"
     volumes:

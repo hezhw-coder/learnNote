@@ -1,12 +1,12 @@
-@baseUrl = http://localhost:8080
-@gatewayUrl = http://localhost
+@baseUrl = http://127.0.0.1:18080
+@gatewayUrl = http://127.0.0.1:18081
 @username = admin
-@password = ChangeMe123!
+@password = Admin@123
 @clientId = replace_client_id
 @clientSecret = replace_client_secret
+@basicAuthToken = replace_base64_client_id_colon_client_secret
 @adminToken = replace_admin_token
 @openApiToken = replace_open_api_token
-@basicAuthToken = replace_base64_client_id_colon_client_secret
 @requestId = smoke-test-request-001
 
 ### 健康检查
@@ -23,9 +23,24 @@ X-Request-Id: {{requestId}}
   "password": "{{password}}"
 }
 
+### 会话续期
+# 将上一步响应中的 refreshToken 填入请求体后执行
+POST {{baseUrl}}/api/auth/refresh
+Content-Type: application/json
+X-Request-Id: {{requestId}}
+
+{
+  "refreshToken": "replace_refresh_token"
+}
+
 ### 查询数据源列表
 # 将上一步响应中的 accessToken 填入变量后再执行
 GET {{baseUrl}}/api/data-sources?pageNum=1&pageSize=10
+Authorization: Bearer {{adminToken}}
+X-Request-Id: {{requestId}}
+
+### 退出登录
+POST {{baseUrl}}/api/auth/logout
 Authorization: Bearer {{adminToken}}
 X-Request-Id: {{requestId}}
 
@@ -36,12 +51,8 @@ Content-Type: application/json
 X-Request-Id: {{requestId}}
 
 {
-  "name": "TiDB-MVP",
-  "code": "tidb_mvp",
   "type": "TIDB",
-  "host": "localhost",
-  "port": 4000,
-  "databaseName": "medical_data_center",
+  "jdbcUrl": "jdbc:mysql://127.0.0.1:4000/medical_data_center?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai",
   "username": "root",
   "password": ""
 }
@@ -54,20 +65,14 @@ X-Request-Id: {{requestId}}
 
 {
   "name": "patient_increment_job",
-  "sourceId": 1,
+  "dataSourceId": 1,
+  "loadMode": "INCREMENTAL",
   "sourceTable": "patient_info",
-  "extractMode": "INCREMENTAL",
   "incrementField": "update_time",
-  "odsTable": "ods_his_patient_info",
-  "cdmEntity": "PATIENT",
-  "cron": "0 */30 * * * ?",
-  "fieldMappings": [
-    {
-      "sourceField": "patient_name",
-      "targetField": "patient_name",
-      "transformers": []
-    }
-  ]
+  "idField": "patient_id",
+  "nameField": "patient_name",
+  "genderField": "gender",
+  "birthDateField": "birth_date"
 }
 
 ### 查询数据集列表
@@ -83,34 +88,69 @@ X-Request-Id: {{requestId}}
 
 {
   "name": "门诊趋势",
-  "datasetId": 1,
-  "layoutSchema": {
-    "version": "1.0.0",
-    "components": [
-      {
-        "id": "chart_1",
-        "type": "LINE",
-        "title": "近30天门诊趋势",
-        "bindings": {
-          "dimension": "visit_date",
-          "metrics": ["visit_count"]
-        }
-      }
-    ]
-  }
+  "datasetCode": "cdm_patient",
+  "designJson": "{\"version\":\"1.0.0\",\"components\":[{\"id\":\"chart_1\",\"type\":\"TABLE\",\"title\":\"患者列表\"}]}"
+}
+
+### 新建报表调度
+# 将上一步返回的模板 id 填入 templateId
+POST {{baseUrl}}/api/reports/schedules
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+X-Request-Id: {{requestId}}
+
+{
+  "templateId": 1,
+  "cronExpression": "0 0 8 * * ?",
+  "enabled": true,
+  "channel": "IN_APP"
+}
+
+### 更新报表调度为禁用
+# 将上一步返回的调度 id 替换到路径中执行
+PUT {{baseUrl}}/api/reports/schedules/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+X-Request-Id: {{requestId}}
+
+{
+  "templateId": 1,
+  "cronExpression": "0 0 8 * * ?",
+  "enabled": false,
+  "channel": "IN_APP"
 }
 
 ### 申请开放 API 令牌
 # 请先将 client_id:client_secret 做 Base64 编码后填入 basicAuthToken
-POST {{baseUrl}}/oauth2/token
+POST {{gatewayUrl}}/oauth2/token
 Authorization: Basic {{basicAuthToken}}
 Content-Type: application/x-www-form-urlencoded
 X-Request-Id: {{requestId}}
 
-grant_type=client_credentials&scope=patient.read encounter.read lab.read
+grant_type=client_credentials&scope=patients.read encounters.read labs.read medications.read reports.read
 
 ### 查询患者信息
 # 将上一步 access_token 填入 openApiToken 后执行
-GET {{gatewayUrl}}/open-api/v1/patients?pageNum=1&pageSize=10
+GET {{gatewayUrl}}/open-api/v1/patients?patientCode=P2026001&gender=男&nameKeyword=张&startDate=1980-01-01&endDate=1990-12-31
 Authorization: Bearer {{openApiToken}}
+X-Request-Id: {{requestId}}
+
+### 查询就诊记录
+GET {{gatewayUrl}}/open-api/v1/encounters?patientCode=P2026001&encounterType=门诊&departmentName=心内&doctorName=王&startDate=2026-05-01&endDate=2026-05-31
+Authorization: Bearer {{openApiToken}}
+X-Request-Id: {{requestId}}
+
+### 查询检验结果
+GET {{gatewayUrl}}/open-api/v1/labs?patientCode=P2026001&itemName=血&abnormalOnly=true&startDate=2026-05-01&endDate=2026-05-31
+Authorization: Bearer {{openApiToken}}
+X-Request-Id: {{requestId}}
+
+### 查询用药医嘱
+GET {{gatewayUrl}}/open-api/v1/medications?patientCode=P2026001&drugName=阿司匹林&startDate=2026-05-01&endDate=2026-05-31
+Authorization: Bearer {{openApiToken}}
+X-Request-Id: {{requestId}}
+
+### 查询系统总览
+GET {{baseUrl}}/api/system/overview
+Authorization: Bearer {{adminToken}}
 X-Request-Id: {{requestId}}

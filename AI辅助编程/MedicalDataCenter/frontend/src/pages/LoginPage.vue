@@ -45,7 +45,7 @@ async function handleLogin() {
     <el-card class="login-card panel-card" shadow="never">
       <div class="card-header">
         <h2>欢迎登录</h2>
-        <span>内置 mock 登录，后续切换真实接口</span>
+        <span>已接入真实认证接口与会话续期</span>
       </div>
 
       <el-form label-position="top" @submit.prevent="handleLogin">
@@ -62,7 +62,7 @@ async function handleLogin() {
 
       <div class="login-tips">
         <span>默认演示账号：admin / Admin@123</span>
-        <span>后续接入 `/api/auth/login` 与刷新令牌流程</span>
+        <span>登录后会自动续期，会话退出后旧令牌将失效</span>
       </div>
     </el-card>
   </div>

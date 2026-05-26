@@ -16,6 +16,18 @@ const props = defineProps<{
   color?: string;
 }>();
 
+const emit = defineEmits<{
+  pointClick: [point: TrendPoint];
+}>();
+
+function handlePointClick(params: { dataIndex?: number }) {
+  const target = props.points[params.dataIndex ?? -1];
+  if (!target) {
+    return;
+  }
+  emit('pointClick', target);
+}
+
 const option = computed(() => ({
   tooltip: { trigger: 'axis' },
   grid: { top: 32, left: 12, right: 12, bottom: 8, containLabel: true },
@@ -49,6 +61,6 @@ const option = computed(() => ({
         <h3>{{ title }}</h3>
       </div>
     </template>
-    <VChart :option="option" autoresize style="height: 300px" />
+    <VChart :option="option" autoresize style="height: 300px" @click="handlePointClick" />
   </el-card>
 </template>

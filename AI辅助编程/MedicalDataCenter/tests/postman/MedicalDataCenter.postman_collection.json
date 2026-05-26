@@ -8,11 +8,11 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8080"
+      "value": "http://127.0.0.1:18080"
     },
     {
       "key": "gatewayUrl",
-      "value": "http://localhost"
+      "value": "http://127.0.0.1:18081"
     },
     {
       "key": "username",
@@ -20,7 +20,7 @@
     },
     {
       "key": "password",
-      "value": "ChangeMe123!"
+      "value": "Admin@123"
     },
     {
       "key": "adminToken",
@@ -147,7 +147,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"TiDB-MVP\",\n  \"code\": \"tidb_mvp\",\n  \"type\": \"TIDB\",\n  \"host\": \"localhost\",\n  \"port\": 4000,\n  \"databaseName\": \"medical_data_center\",\n  \"username\": \"root\",\n  \"password\": \"\"\n}"
+          "raw": "{\n  \"type\": \"TIDB\",\n  \"jdbcUrl\": \"jdbc:mysql://127.0.0.1:4000/medical_data_center?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai\",\n  \"username\": \"root\",\n  \"password\": \"\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/data-sources/test",
@@ -176,7 +176,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"patient_increment_job\",\n  \"sourceId\": 1,\n  \"sourceTable\": \"patient_info\",\n  \"extractMode\": \"INCREMENTAL\",\n  \"incrementField\": \"update_time\",\n  \"odsTable\": \"ods_his_patient_info\",\n  \"cdmEntity\": \"PATIENT\",\n  \"cron\": \"0 */30 * * * ?\",\n  \"fieldMappings\": [\n    {\n      \"sourceField\": \"patient_name\",\n      \"targetField\": \"patient_name\",\n      \"transformers\": []\n    }\n  ]\n}"
+          "raw": "{\n  \"name\": \"patient_increment_job\",\n  \"dataSourceId\": 1,\n  \"loadMode\": \"INCREMENTAL\",\n  \"sourceTable\": \"patient_info\",\n  \"incrementField\": \"update_time\",\n  \"idField\": \"patient_id\",\n  \"nameField\": \"patient_name\",\n  \"genderField\": \"gender\",\n  \"birthDateField\": \"birth_date\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/etl/jobs",
@@ -205,7 +205,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"门诊趋势\",\n  \"datasetId\": 1,\n  \"layoutSchema\": {\n    \"version\": \"1.0.0\",\n    \"components\": [\n      {\n        \"id\": \"chart_1\",\n        \"type\": \"LINE\",\n        \"title\": \"近30天门诊趋势\",\n        \"bindings\": {\n          \"dimension\": \"visit_date\",\n          \"metrics\": [\"visit_count\"]\n        }\n      }\n    ]\n  }\n}"
+          "raw": "{\n  \"name\": \"门诊趋势\",\n  \"datasetCode\": \"cdm_patient\",\n  \"designJson\": \"{\\\"version\\\":\\\"1.0.0\\\",\\\"components\\\":[{\\\"id\\\":\\\"chart_1\\\",\\\"type\\\":\\\"TABLE\\\",\\\"title\\\":\\\"患者列表\\\"}]}\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/reports/templates",
@@ -268,14 +268,14 @@
             },
             {
               "key": "scope",
-              "value": "patient.read encounter.read lab.read",
+              "value": "patients.read encounters.read labs.read medications.read reports.read",
               "type": "text"
             }
           ]
         },
         "url": {
-          "raw": "{{baseUrl}}/oauth2/token",
-          "host": ["{{baseUrl}}"],
+          "raw": "{{gatewayUrl}}/oauth2/token",
+          "host": ["{{gatewayUrl}}"],
           "path": ["oauth2", "token"]
         }
       }
@@ -295,17 +295,158 @@
           }
         ],
         "url": {
-          "raw": "{{gatewayUrl}}/open-api/v1/patients?pageNum=1&pageSize=10",
+          "raw": "{{gatewayUrl}}/open-api/v1/patients?patientCode=P2026001&gender=男&nameKeyword=张&startDate=1980-01-01&endDate=1990-12-31",
           "host": ["{{gatewayUrl}}"],
           "path": ["open-api", "v1", "patients"],
           "query": [
             {
-              "key": "pageNum",
-              "value": "1"
+              "key": "patientCode",
+              "value": "P2026001"
             },
             {
-              "key": "pageSize",
-              "value": "10"
+              "key": "gender",
+              "value": "男"
+            },
+            {
+              "key": "nameKeyword",
+              "value": "张"
+            },
+            {
+              "key": "startDate",
+              "value": "1980-01-01"
+            },
+            {
+              "key": "endDate",
+              "value": "1990-12-31"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Open API - Encounters",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{openApiToken}}"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "postman-openapi-encounters"
+          }
+        ],
+        "url": {
+          "raw": "{{gatewayUrl}}/open-api/v1/encounters?patientCode=P2026001&encounterType=门诊&departmentName=心内&doctorName=王&startDate=2026-05-01&endDate=2026-05-31",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["open-api", "v1", "encounters"],
+          "query": [
+            {
+              "key": "patientCode",
+              "value": "P2026001"
+            },
+            {
+              "key": "encounterType",
+              "value": "门诊"
+            },
+            {
+              "key": "departmentName",
+              "value": "心内"
+            },
+            {
+              "key": "doctorName",
+              "value": "王"
+            },
+            {
+              "key": "startDate",
+              "value": "2026-05-01"
+            },
+            {
+              "key": "endDate",
+              "value": "2026-05-31"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Open API - Labs",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{openApiToken}}"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "postman-openapi-labs"
+          }
+        ],
+        "url": {
+          "raw": "{{gatewayUrl}}/open-api/v1/labs?patientCode=P2026001&itemName=血&abnormalOnly=true&startDate=2026-05-01&endDate=2026-05-31",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["open-api", "v1", "labs"],
+          "query": [
+            {
+              "key": "patientCode",
+              "value": "P2026001"
+            },
+            {
+              "key": "itemName",
+              "value": "血"
+            },
+            {
+              "key": "abnormalOnly",
+              "value": "true"
+            },
+            {
+              "key": "startDate",
+              "value": "2026-05-01"
+            },
+            {
+              "key": "endDate",
+              "value": "2026-05-31"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Open API - Medications",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{openApiToken}}"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "postman-openapi-medications"
+          }
+        ],
+        "url": {
+          "raw": "{{gatewayUrl}}/open-api/v1/medications?patientCode=P2026001&drugName=阿司匹林&startDate=2026-05-01&endDate=2026-05-31",
+          "host": ["{{gatewayUrl}}"],
+          "path": ["open-api", "v1", "medications"],
+          "query": [
+            {
+              "key": "patientCode",
+              "value": "P2026001"
+            },
+            {
+              "key": "drugName",
+              "value": "阿司匹林"
+            },
+            {
+              "key": "startDate",
+              "value": "2026-05-01"
+            },
+            {
+              "key": "endDate",
+              "value": "2026-05-31"
             }
           ]
         }

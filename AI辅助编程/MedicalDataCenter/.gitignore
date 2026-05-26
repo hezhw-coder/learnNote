@@ -1,0 +1,3 @@
+docker/certs/
+docker/secrets/
+.artifacts/

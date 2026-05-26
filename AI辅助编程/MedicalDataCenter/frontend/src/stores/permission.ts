@@ -11,22 +11,27 @@ const menuItems: MenuItem[] = [
   { title: '报表设计', path: '/reports/designer/template-001', icon: 'Histogram', permission: 'REPORT_MANAGE' },
   { title: '报表任务', path: '/reports/jobs', icon: 'Timer', permission: 'REPORT_MANAGE' },
   { title: '开放 API', path: '/open-api', icon: 'Link', permission: 'OPEN_API_MANAGE' },
-  { title: '系统管理', path: '/system', icon: 'Setting', permission: 'SYSTEM_ROLE_VIEW' },
+  {
+    title: '系统管理',
+    path: '/system',
+    icon: 'Setting',
+    permissionsAny: ['SYSTEM_ROLE_VIEW', 'SYSTEM_USER_VIEW', 'SYSTEM_ROLE_MANAGE', 'SYSTEM_PARAM_MANAGE'],
+  },
 ];
 
 export const usePermissionStore = defineStore('permission', () => {
   const authStore = useAuthStore();
 
   const visibleMenus = computed(() => {
-    const permissions = authStore.user?.permissions ?? [];
-    return menuItems.filter((menu) => permissions.includes(menu.permission));
+    return menuItems.filter((menu) => hasPermission(menu.permission, menu.permissionsAny));
   });
 
-  function hasPermission(permission?: string) {
+  function hasPermission(permission?: string, permissionsAny?: string[]) {
+    const userPermissions = authStore.user?.permissions ?? [];
     if (!permission) {
-      return true;
+      return permissionsAny?.some((item) => userPermissions.includes(item)) ?? true;
     }
-    return authStore.user?.permissions.includes(permission) ?? false;
+    return userPermissions.includes(permission);
   }
 
   return {

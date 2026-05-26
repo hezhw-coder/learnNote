@@ -1,43 +1,13 @@
 {
   "jobName": "patient_increment_job",
-  "sourceType": "MYSQL",
+  "dataSourceId": 1,
   "sourceTable": "patient_info",
-  "extractMode": "INCREMENTAL",
+  "loadMode": "INCREMENTAL",
+  "targetDatasetCode": "cdm_patient",
   "incrementField": "update_time",
-  "odsTable": "ods_his_patient_info",
-  "cdmEntity": "PATIENT",
-  "fieldMappings": [
-    {
-      "sourceField": "patient_id",
-      "targetField": "patient_code",
-      "transformers": []
-    },
-    {
-      "sourceField": "patient_name",
-      "targetField": "patient_name",
-      "transformers": []
-    },
-    {
-      "sourceField": "gender_code",
-      "targetField": "gender",
-      "transformers": ["DICT:GENDER"]
-    },
-    {
-      "sourceField": "birthday",
-      "targetField": "birth_date",
-      "transformers": ["DATE:yyyy-MM-dd"]
-    },
-    {
-      "sourceField": "mobile",
-      "targetField": "mobile",
-      "transformers": ["MASK:MOBILE"]
-    }
-  ],
-  "filters": [
-    {
-      "field": "deleted",
-      "operator": "=",
-      "value": 0
-    }
-  ]
+  "idField": "patient_id",
+  "nameField": "patient_name",
+  "genderField": "gender_code",
+  "birthDateField": "birthday",
+  "extractSql": "select patient_id, patient_name, gender_code, birthday, update_time from patient_info where deleted = 0"
 }

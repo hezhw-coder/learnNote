@@ -4,6 +4,16 @@ export interface EtlFieldMapping {
   transformRule: string;
 }
 
+export type EtlDatasetConfigFieldKey =
+  | 'idField'
+  | 'nameField'
+  | 'genderField'
+  | 'birthDateField'
+  | 'extraCodeField'
+  | 'valueField'
+  | 'unitField'
+  | 'eventTimeField';
+
 export interface EtlJobItem {
   id: string;
   name: string;
@@ -22,14 +32,19 @@ export interface EtlJobFormModel {
   name: string;
   sourceId: string;
   sourceTable: string;
-  datasetName: string;
+  datasetCode: string;
   runMode: 'full' | 'incremental';
   extractSql?: string;
   incrementField: string;
+  fieldBindings: Record<string, string>;
   idField: string;
   nameField: string;
   genderField?: string;
   birthDateField?: string;
+  extraCodeField?: string;
+  valueField?: string;
+  unitField?: string;
+  eventTimeField?: string;
   cleanRules: string;
   mappings: EtlFieldMapping[];
   schedule: string;

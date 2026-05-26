@@ -2,7 +2,7 @@
 
 ## 1. 文档说明
 
-本文档基于 `medical-data-center-mvp-plan.md` 中的接口规划整理，作为 MVP 一期开放接口与管理接口的交付文档。实际开发阶段建议同步输出 `OpenAPI/Swagger` 文档并与本说明保持一致。
+本文档描述当前项目已经实现并可用于联调的管理端 API、报表 API 和开放 API。由于项目同时存在开发版和生产版部署模式，基础地址需按场景选择。
 
 ## 2. 通用约定
 
@@ -10,9 +10,14 @@
 
 | 场景 | 基础地址 |
 | --- | --- |
-| 管理端 API | `http://localhost:8080/api` |
-| 网关转发后的管理端 API | `http://localhost/api` |
-| 开放 API | `http://localhost/open-api/v1` |
+| 开发版管理端 API | `http://127.0.0.1:18080/api` |
+| 开发版 Nginx 入口 | `http://127.0.0.1:18081` |
+| 生产版统一入口 | `https://mdc.localtest.me:18443` |
+
+说明：
+
+- 生产版 `backend` 不直接暴露宿主机端口
+- 生产版管理端 API、OAuth2 和开放 API 都应走 `https://mdc.localtest.me:18443`
 
 ### 2.2 统一响应格式
 
@@ -22,7 +27,7 @@
   "message": "success",
   "data": {},
   "requestId": "9f4dd2f7-6b29-4dca-a721-6dd65b45f020",
-  "timestamp": "2026-05-24T10:00:00Z"
+  "timestamp": "2026-05-26T10:00:00Z"
 }
 ```
 
@@ -31,17 +36,19 @@
 | `code` | 含义 | 说明 |
 | --- | --- | --- |
 | `0` | 成功 | 请求处理成功 |
-| `40001` | 参数错误 | 入参校验失败 |
-| `40100` | 未认证 | 令牌缺失或失效 |
-| `40300` | 无权限 | 角色、作用域或数据权限不足 |
-| `40400` | 资源不存在 | 查询对象未找到 |
-| `42900` | 请求过多 | 命中 Redis 限流规则 |
-| `50000` | 系统异常 | 服务器内部错误 |
+| `400` | 参数错误 | 入参校验失败、模板参数缺失、发布校验失败等 |
+| `401` | 未认证 | Token 缺失、失效、退出后继续访问 |
+| `403` | 无权限 | 权限码或作用域不足 |
+| `404` | 资源不存在 | 模板、任务、客户端等不存在 |
+| `409` | 版本冲突 | 报表模板发布或保存时 `baseVersion` 过期 |
+| `423` | 账号锁定 | 连续登录失败触发锁定 |
+| `429` | 请求过多 | 命中限流规则 |
+| `500` | 系统异常 | 服务端内部错误 |
 
 ### 2.4 认证方式
 
-- 管理端 API：登录后携带 `JWT`
-- 开放 API：通过 `OAuth2 + JWT` 获取访问令牌
+- 管理端 API：平台账号登录后使用 `Authorization: Bearer <accessToken>`
+- 开放 API：通过 `/oauth2/token` 获取访问令牌后使用 `Bearer`
 
 请求头示例：
 
@@ -67,33 +74,33 @@ X-Request-Id: 7ad88973-a3b1-4afc-b6d9-9f9df53fbf82
 }
 ```
 
-响应示例：
+关键返回字段：
 
-```json
-{
-  "code": 0,
-  "message": "success",
-  "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiJ9",
-    "refreshToken": "refresh-token-value",
-    "expiresIn": 7200,
-    "tokenType": "Bearer",
-    "user": {
-      "id": 1,
-      "username": "admin",
-      "displayName": "系统管理员",
-      "roles": ["SUPER_ADMIN"]
-    }
-  },
-  "requestId": "request-id",
-  "timestamp": "2026-05-24T10:00:00Z"
-}
-```
+- `accessToken`
+- `refreshToken`
+- `expiresIn`
+- `refreshExpiresIn`
+- `authorities`
 
-### 3.2 刷新令牌
+### 3.2 会话续期
 
 - 方法：`POST`
 - 路径：`/api/auth/refresh`
+
+### 3.3 退出登录
+
+- 方法：`POST`
+- 路径：`/api/auth/logout`
+
+### 3.4 当前用户
+
+- 方法：`GET`
+- 路径：`/api/auth/me`
+
+说明：
+
+- 当前已实现服务端会话失效控制
+- 退出登录后旧 `accessToken` 与 `refreshToken` 均不可继续使用
 
 ## 4. 数据源管理
 
@@ -101,16 +108,6 @@ X-Request-Id: 7ad88973-a3b1-4afc-b6d9-9f9df53fbf82
 
 - 方法：`GET`
 - 路径：`/api/data-sources`
-
-查询参数：
-
-| 参数 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| `pageNum` | integer | 否 | 页码 |
-| `pageSize` | integer | 否 | 每页条数 |
-| `keyword` | string | 否 | 名称关键字 |
-| `type` | string | 否 | 数据源类型 |
-| `status` | string | 否 | 连接状态 |
 
 ### 4.2 新增数据源
 
@@ -122,17 +119,11 @@ X-Request-Id: 7ad88973-a3b1-4afc-b6d9-9f9df53fbf82
 ```json
 {
   "name": "HIS-MySQL-01",
-  "code": "his_mysql_01",
   "type": "MYSQL",
-  "host": "10.10.0.12",
-  "port": 3306,
+  "jdbcUrl": "jdbc:mysql://10.10.0.12:3306/his?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai",
   "databaseName": "his",
   "username": "his_readonly",
-  "password": "<SECRET>",
-  "properties": {
-    "ssl": false,
-    "connectTimeout": 5000
-  }
+  "password": "<SECRET>"
 }
 ```
 
@@ -141,127 +132,245 @@ X-Request-Id: 7ad88973-a3b1-4afc-b6d9-9f9df53fbf82
 - 方法：`POST`
 - 路径：`/api/data-sources/test`
 
-说明：
-
-- 不保存数据源，仅用于验证连通性与参数有效性。
-- 应返回数据库版本、连通状态、耗时等信息。
-
 ### 4.4 切换数据源状态
 
 - 方法：`PATCH`
 - 路径：`/api/data-sources/{id}/status`
 
-请求体示例：
+## 5. ETL 与数据集
 
-```json
-{
-  "status": "DISABLED"
-}
-```
-
-## 5. ETL 与标准化
-
-### 5.1 查询抽取任务
+### 5.1 查询 ETL 任务
 
 - 方法：`GET`
 - 路径：`/api/etl/jobs`
 
-### 5.2 新增抽取任务
+### 5.2 新增 ETL 任务
 
 - 方法：`POST`
 - 路径：`/api/etl/jobs`
 
-请求体示例：
+当前建议使用语义化字段绑定：
 
 ```json
 {
   "name": "his_patient_increment_job",
-  "sourceId": 1001,
+  "dataSourceId": 1001,
+  "loadMode": "INCREMENTAL",
+  "targetDatasetCode": "cdm_patient",
   "sourceTable": "patient_info",
-  "extractMode": "INCREMENTAL",
   "incrementField": "update_time",
-  "odsTable": "ods_his_patient_info",
-  "cdmEntity": "PATIENT",
-  "cron": "0 */30 * * * ?",
-  "fieldMappings": [
-    {
-      "sourceField": "patient_name",
-      "targetField": "patient_name",
-      "transformers": []
-    },
-    {
-      "sourceField": "gender_code",
-      "targetField": "gender",
-      "transformers": ["DICT:GENDER"]
-    }
-  ]
+  "fieldBindings": {
+    "patientCode": "patient_id",
+    "patientName": "patient_name",
+    "gender": "gender_code",
+    "birthDate": "birth_date"
+  }
 }
 ```
 
-### 5.3 执行抽取任务
+说明：
+
+- 后端会把 `fieldBindings` 持久化到 `etl_job.field_bindings_json`
+- 历史 `idField/nameField/...` 仍兼容，但新调用建议统一改为 `fieldBindings`
+
+### 5.3 执行 ETL 任务
 
 - 方法：`POST`
 - 路径：`/api/etl/jobs/{id}/run`
 
-### 5.4 查询执行记录
+### 5.4 查询运行记录
 
 - 方法：`GET`
 - 路径：`/api/etl/runs/{runId}`
 
-### 5.5 数据集分页查询
+### 5.5 查询数据集
 
 - 方法：`GET`
 - 路径：`/api/datasets`
 
 ## 6. 报表设计与任务
 
-### 6.1 新增报表模板
+### 6.1 查询模板列表
+
+- 方法：`GET`
+- 路径：`/api/reports/templates`
+
+### 6.2 新增模板
 
 - 方法：`POST`
 - 路径：`/api/reports/templates`
+
+### 6.3 更新模板
+
+- 方法：`PUT`
+- 路径：`/api/reports/templates/{id}`
+
+### 6.4 发布模板
+
+- 方法：`POST`
+- 路径：`/api/reports/templates/{id}/publish`
+
+说明：
+
+- 模板当前支持 `draft/published` 双状态
+- 发布时会执行最小结构校验
+- 若 `baseVersion` 已过期，后端返回 `409`
+
+### 6.5 模板结构关键字段
+
+模板 `designJson` 当前已支持：
+
+- `schemaVersion`
+- `layout`
+- `filters`
+- `parameters`
+- `widgets`
+- `interactions`
+- `versioning`
+
+其中：
+
+- `parameters` 用于模板级参数定义
+- `versioning` 用于草稿版/发布版/生效版元数据
+
+### 6.6 预览模板
+
+- 方法：`GET`
+- 路径：`/api/reports/templates/{id}/preview`
+- 用途：无运行时参数时直接预览
+
+- 方法：`POST`
+- 路径：`/api/reports/templates/{id}/preview`
+- 用途：带运行时参数或联动上下文预览
 
 请求体示例：
 
 ```json
 {
-  "name": "门诊就诊趋势分析",
-  "datasetId": 2001,
-  "layoutSchema": {
-    "version": "1.0.0",
-    "components": [
+  "parameters": [
+    {
+      "parameterCode": "gender",
+      "value": "女"
+    }
+  ],
+  "interactions": [
+    {
+      "interactionId": "interaction-1",
+      "sourceWidgetId": "chart-1",
+      "targetWidgetId": "table-1",
+      "sourceField": "gender",
+      "targetField": "gender",
+      "value": "女"
+    }
+  ]
+}
+```
+
+当前返回结构重点包含：
+
+- `templateName`
+- `datasetCode`
+- `layoutColumns`
+- `widgetCount`
+- `filterCount`
+- `parameterSummary`
+- `interactionSummary`
+- `bindingSummary`
+- `appliedFilters`
+- `rows`
+
+### 6.7 导出 PDF
+
+- 方法：`GET`
+- 路径：`/api/reports/templates/{id}/export/pdf`
+- 用途：无运行时参数导出
+
+- 方法：`POST`
+- 路径：`/api/reports/templates/{id}/export/pdf`
+- 用途：带运行时参数导出
+
+### 6.8 导出 Excel
+
+- 方法：`GET`
+- 路径：`/api/reports/templates/{id}/export/excel`
+- 用途：无运行时参数导出
+
+- 方法：`POST`
+- 路径：`/api/reports/templates/{id}/export/excel`
+- 用途：带运行时参数导出
+
+说明：
+
+- 导出、预览、调度共用同一套模板归一化和过滤逻辑
+- 快照会保留 `runtime_params_json`
+
+### 6.9 调度管理
+
+查询调度：
+
+- 方法：`GET`
+- 路径：`/api/reports/schedules`
+
+新建调度：
+
+- 方法：`POST`
+- 路径：`/api/reports/schedules`
+
+更新调度：
+
+- 方法：`PUT`
+- 路径：`/api/reports/schedules/{id}`
+
+立即执行：
+
+- 方法：`POST`
+- 路径：`/api/reports/schedules/{id}/run`
+
+请求体示例：
+
+```json
+{
+  "templateId": 1,
+  "cronExpression": "0 0 8 * * ?",
+  "enabled": true,
+  "channel": "IN_APP",
+  "runtimeParams": {
+    "parameters": [
       {
-        "id": "chart_01",
-        "type": "LINE",
-        "title": "近30天门诊就诊趋势",
-        "bindings": {
-          "dimension": "visit_date",
-          "metrics": ["visit_count"]
-        }
+        "parameterCode": "gender",
+        "value": "女"
       }
-    ]
+    ],
+    "interactions": []
   }
 }
 ```
 
-### 6.2 报表预览
+当前返回结构重点包含：
 
-- 方法：`POST`
-- 路径：`/api/reports/templates/{id}/preview`
+- `latestRun`
+- `nextRun`
+- `owner`
+- `templateVersion`
 
-### 6.3 导出 PDF
+说明：
 
-- 方法：`POST`
-- 路径：`/api/reports/templates/{id}/export/pdf`
+- 已启用任务会自动注册到 Quartz
+- 应用重启后会自动恢复已启用调度
+- 调度会记录 `template_version`
+- 若调度绑定版本与模板当前生效版本不一致，执行会被阻断
 
-### 6.4 导出 Excel
+### 6.10 快照列表
 
-- 方法：`POST`
-- 路径：`/api/reports/templates/{id}/export/excel`
+- 方法：`GET`
+- 路径：`/api/reports/snapshots`
 
-### 6.5 报表调度管理
+当前快照记录会保留：
 
-- 方法：`GET/POST/PUT`
-- 路径：`/api/reports/schedules`
+- `scheduleId`
+- `templateVersion`
+- `runtimeParamsJson`
+- 统一渲染快照内容
 
 ## 7. 开放 API 管理
 
@@ -279,10 +388,10 @@ X-Request-Id: 7ad88973-a3b1-4afc-b6d9-9f9df53fbf82
 
 ```json
 {
-  "clientName": "regional-health-platform",
-  "clientType": "CONFIDENTIAL",
-  "grantTypes": ["client_credentials"],
-  "scopes": ["patient.read", "encounter.read", "lab.read"]
+  "name": "regional-health-platform",
+  "clientId": "regional-health-platform",
+  "clientSecret": "<SECRET>",
+  "scopes": "patients.read,encounters.read,labs.read,medications.read,reports.read"
 }
 ```
 
@@ -296,135 +405,147 @@ X-Request-Id: 7ad88973-a3b1-4afc-b6d9-9f9df53fbf82
 - 方法：`GET`
 - 路径：`/api/open-api/logs`
 
-## 8. 第三方开放接口
+## 8. 系统管理
 
-### 8.1 获取访问令牌
+当前已开放的核心接口包括：
+
+- `GET /api/system/users`
+- `POST /api/system/users`
+- `PUT /api/system/users/{id}/status`
+- `PUT /api/system/users/{id}/roles`
+- `GET /api/system/roles`
+- `POST /api/system/roles`
+- `PUT /api/system/roles/{id}`
+- `PUT /api/system/roles/{id}/permissions`
+- `GET /api/system/permissions`
+- `GET /api/system/parameters`
+- `PUT /api/system/parameters/{key}`
+- `GET /api/system/overview`
+
+权限要求：
+
+- 用户写操作：`SYSTEM_USER_MANAGE`
+- 角色写操作：`SYSTEM_ROLE_MANAGE`
+- 参数写操作：`SYSTEM_PARAM_MANAGE`
+
+## 9. 第三方开放接口
+
+### 9.1 获取访问令牌
 
 - 方法：`POST`
 - 路径：`/oauth2/token`
-- 认证：`Basic client_id:client_secret`
 
-请求示例：
+支持两种调用方式：
 
-```http
-POST /oauth2/token HTTP/1.1
-Authorization: Basic <BASE64(client_id:client_secret)>
-Content-Type: application/x-www-form-urlencoded
+1. `Authorization: Basic <base64(client_id:client_secret)> + application/x-www-form-urlencoded`
+2. `application/json` 直接传 `clientId/clientSecret/scope`
 
-grant_type=client_credentials&scope=patient.read encounter.read
-```
+推荐统一通过 Nginx 入口调用：
 
-### 8.2 患者基础信息查询
+- 开发版：`http://127.0.0.1:18081/oauth2/token`
+- 生产版：`https://mdc.localtest.me:18443/oauth2/token`
+
+### 9.2 患者查询
 
 - 方法：`GET`
 - 路径：`/open-api/v1/patients`
+- 作用域：`patients.read`
 
-查询参数：
+推荐参数：
 
-| 参数 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| `patientId` | string | 否 | 平台患者主键 |
-| `idCardNo` | string | 否 | 身份证号，默认脱敏查询 |
-| `name` | string | 否 | 患者姓名 |
-| `pageNum` | integer | 否 | 页码 |
-| `pageSize` | integer | 否 | 每页条数 |
+- `patientCode`
+- `gender`
+- `nameKeyword`
+- `startDate`
+- `endDate`
 
-响应数据示例：
-
-```json
-{
-  "code": 0,
-  "message": "success",
-  "data": {
-    "records": [
-      {
-        "patientId": "P202605240001",
-        "patientName": "张*",
-        "gender": "M",
-        "birthDate": "1985-03-21",
-        "mobile": "138****0000"
-      }
-    ],
-    "total": 1,
-    "pageNum": 1,
-    "pageSize": 20
-  },
-  "requestId": "request-id",
-  "timestamp": "2026-05-24T10:00:00Z"
-}
-```
-
-### 8.3 就诊记录查询
+### 9.3 就诊查询
 
 - 方法：`GET`
 - 路径：`/open-api/v1/encounters`
+- 作用域：`encounters.read`
 
-推荐查询参数：
+推荐参数：
 
-- `patientId`
-- `visitNo`
+- `patientCode`
 - `encounterType`
+- `departmentName`
+- `doctorName`
 - `startDate`
 - `endDate`
 
-### 8.4 检验结果查询
+### 9.4 检验查询
 
 - 方法：`GET`
 - 路径：`/open-api/v1/labs`
+- 作用域：`labs.read`
 
-推荐查询参数：
+推荐参数：
 
-- `patientId`
-- `encounterId`
+- `patientCode`
+- `encounterCode`
 - `itemCode`
+- `itemName`
+- `abnormalOnly`
 - `startDate`
 - `endDate`
 
-### 8.5 报表结果查询
+### 9.5 用药查询
+
+- 方法：`GET`
+- 路径：`/open-api/v1/medications`
+- 作用域：`medications.read`
+
+推荐参数：
+
+- `patientCode`
+- `drugCode`
+- `drugName`
+- `startDate`
+- `endDate`
+
+### 9.6 报表结果查询
 
 - 方法：`GET`
 - 路径：`/open-api/v1/reports`
+- 作用域：`reports.read`
 
-推荐查询参数：
+推荐参数：
 
 - `reportCode`
 - `snapshotDate`
 - `pageNum`
 - `pageSize`
 
-## 9. 限流与审计
+## 10. 限流与审计
 
-开放 API 应至少支持以下策略：
+当前开放 API 已具备：
 
 - 客户端级限流
-- 接口级限流
-- 突发流量保护
-- 审计日志按 `clientId + uri + requestId` 检索
+- Redis 优先、进程内回退
+- 访问日志
+- `requestId` 透传
+- 成功日志统一记录为 `ok rows=<n>`
 
-当命中限流规则时，返回示例：
+说明：
 
-```json
-{
-  "code": 42900,
-  "message": "rate limit exceeded",
-  "data": null,
-  "requestId": "request-id",
-  "timestamp": "2026-05-24T10:00:00Z"
-}
-```
+- 平台管理端 token 不可直接访问 `/open-api/**`
+- scope 不足返回 `403`
+- 命中限流返回 `429`
+- 成功请求会写入 `api_access_log`
 
-## 10. 联调建议
+## 11. 联调建议
 
-推荐按以下顺序联调：
+推荐顺序：
 
-1. 登录接口与鉴权链路
+1. 登录、续期、退出登录
 2. 数据源新增与测试连接
 3. ETL 任务创建与执行
-4. 报表模板预览与导出
-5. 开放客户端申请与令牌申请
-6. 第三方查询接口与限流验证
+4. 报表模板预览、发布、导出、调度
+5. 客户端申请与 token 申请
+6. 患者/就诊/检验/用药开放接口验证
 
-基础联调资源见：
+联调资源：
 
 - `tests/api/medical-data-center-smoke.http`
 - `tests/postman/MedicalDataCenter.postman_collection.json`

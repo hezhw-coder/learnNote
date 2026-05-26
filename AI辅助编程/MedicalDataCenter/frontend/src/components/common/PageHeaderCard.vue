@@ -24,13 +24,22 @@ defineProps<{
 </template>
 
 <style scoped>
+.page-header-card {
+  position: sticky;
+  top: 0;
+  z-index: 12;
+  border-color: rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+}
+
 .page-header-card :deep(.el-card__body) {
   padding: 20px 22px;
 }
 
 .header-content {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
 }
@@ -53,6 +62,19 @@ p {
 
 .header-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 992px) {
+  .header-content {
+    flex-direction: column;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 </style>
